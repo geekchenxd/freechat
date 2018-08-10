@@ -1,0 +1,7 @@
+set(LIBCONFIG++_FOUND 1)
+set(LIBCONFIG++_VERSION "1.7")
+set(LIBCONFIG++_LIBRARIES "config++")
+set(LIBCONFIG++_LIBRARY_DIRS "/usr/local/lib64")
+set(LIBCONFIG++_LDFLAGS "")
+set(LIBCONFIG++_INCLUDE_DIRS "${prefix}/include")
+set(LIBCONFIG++_CFLAGS "")
