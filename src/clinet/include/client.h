@@ -5,6 +5,9 @@
 #include <unistd.h>
 #include "screen.h"
 
+#define LENGHT_USERNAME 255
+#define LENGHT_MESSAGE 255
+
 struct gui {
 	WINDOW *display;
 	WINDOW *input;
