@@ -13,6 +13,7 @@ struct node {
 	struct node *next; //next and previous address node linked
 };
 
+uint32_t get_display_height();
 void add_line(char *string);
 void draw_new(WINDOW *display, char *string);
 void draw_old_line(WINDOW *display, int option, int line_user_want_scroll);

@@ -5,13 +5,18 @@ int line_amount = 0, g_bottom_line = 0;
 int display_height, typing_height;
 
 
+uint32_t get_display_height()
+{
+	return display_height;
+}
+
 void initial_buffer_screen(int dis_h, int ty_h) 
 {
 
 	display_height = dis_h;
 	typing_height = ty_h;
 
-	//Initial username's linked list
+	/* Initial line list */
 	root = malloc(sizeof(struct node));
 	root->next = NULL;
 	current = root;
@@ -85,7 +90,6 @@ void draw_new(WINDOW *display, char *string){
 
 	int i;
 
-#if 1
 	if (g_bottom_line < line_amount) {
 		draw_old_line(display, 2, line_amount - g_bottom_line - 1);
 		wprintw(display, "\n");
@@ -99,12 +103,12 @@ void draw_new(WINDOW *display, char *string){
 	line_amount++;
 
 	for (i=0;i<strlen(string);i++) {
-		if (string[i] == '\n') line_amount += 1;
+		if (string[i] == '\n') 
+			line_amount += 1;
 	}
 
 	g_bottom_line = line_amount;
 
-#endif
 	//Print string on screen and refresh screen
 	wprintw(display, "%s\n", string);
 	wrefresh(display);
@@ -132,7 +136,8 @@ void draw_old_line(WINDOW *display, int option, int line_user_want_scroll){
 
 		//Initial current pointer for search in linked list
 		current = root;
-		while (current->next != 0 && current->next->line_number <= desc_line) current = current->next;
+		while (current->next != 0 && current->next->line_number <= desc_line) 
+			current = current->next;
 
 		/*
 			### This comment is for if-else below ###
@@ -160,5 +165,4 @@ void draw_old_line(WINDOW *display, int option, int line_user_want_scroll){
 	}
 
 	wrefresh(display);
-
 }

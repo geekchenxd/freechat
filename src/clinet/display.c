@@ -1,4 +1,5 @@
 #include "display.h"
+#include "c_string.h"
 
 
 extern int state;

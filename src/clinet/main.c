@@ -5,7 +5,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-
+#include <signal.h>
 #include "connection_clent.h"
 #include "c_string.h"
 #include "client.h"
@@ -15,25 +15,40 @@
 #include "typing.h"
 
 
-
 pthread_t *global_typing_thread, *global_display_thread;
 int state = 0, display_height;
 char username[LENGHT_USERNAME] = "";
 
 struct client client;
 
+
+void process_exit(int signal_num)
+{
+    pthread_cancel(*global_display_thread);
+    pthread_cancel(*global_typing_thread);
+	cleanup_gui(client.gui.display, client.gui.input);
+	exit(0);
+}
+
 int main(int argc , char *argv[]) {
 
     int read_size, port;
     char ip_address[255];
-    char message_buffer[LENGHT_MESSAGE], c;
-    char message_buffer_2[LENGHT_MESSAGE];
-    WINDOW *buffer_window[2];
+    //char message_buffer[LENGHT_MESSAGE], c;
+    //char message_buffer_2[LENGHT_MESSAGE];
+    //WINDOW *buffer_window[2];
+	struct sigaction sig;
 	struct client *p;
 
 	p = &client;
 
-	//the input area size
+	/* signal handler */
+	sig.sa_handler = process_exit;
+	sigemptyset(&sig.sa_mask);
+	sig.sa_flags = 0;
+	sigaction(SIGINT, &sig, NULL);
+
+	/* init graphyics */
 	p->gui.input_line = 4;
 	if (init_gui(p->gui.input_line)) {
 		fprintf(stderr, "init gui failed!\n");
@@ -47,8 +62,8 @@ int main(int argc , char *argv[]) {
     pthread_t typing_thread, display_thread;
     global_typing_thread = &typing_thread;
     global_display_thread = &display_thread;
-    pthread_create( &typing_thread, NULL, (void *)typing_func, (void *)p);
-    pthread_create( &display_thread, NULL, (void *)display_func, (void *)p);
+    pthread_create(&typing_thread, NULL, (void *)typing_func, (void *)p);
+    pthread_create(&display_thread, NULL, (void *)display_func, (void *)p);
 
     pthread_join( typing_thread, NULL);
     pthread_join( display_thread, NULL);

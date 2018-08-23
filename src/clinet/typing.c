@@ -1,4 +1,6 @@
 #include "typing.h"
+#include "c_string.h"
+#include "search.h"
 
 extern int state;
 extern int g_bottom_line;
@@ -29,16 +31,21 @@ void* typing_func(void *arg)
             wscanw(p->gui.input, " %[^\n]s", message_buffer);
         }
 
-        //Draw_new line to display message
-        strcpy(message_buffer_2, "you>> ");
-        strcat(message_buffer_2, message_buffer);
-        draw_new(p->gui.display, message_buffer_2);
-
-
 		switch (message_buffer[0]) {
+		case 1:		/*^A show all online contact*/
+			werase(p->gui.input);
+			continue;
+		case 4:		/*^D down page */
+			draw_old_line(p->gui.display, 2, (int)get_display_height() - 1);
+			werase(p->gui.input);
+			continue;
 		case 5:		/*^E*/
 			state = 1;
+			werase(p->gui.input);
 			break;
+		case 6:		/*^F send file*/
+			werase(p->gui.input);
+			continue;
 		case 7:		/*^G*/
 			draw_new(p->gui.display, "system>> ### THIS IS HELP! ###");
 			draw_new(p->gui.display, "system>> \":q!\" to exit program.");
@@ -50,10 +57,33 @@ void* typing_func(void *arg)
 			draw_new(p->gui.display, "system>> \"/down [amount of line]\" to scroll screen down n lines.");
 			draw_new(p->gui.display, "system>> \"/find [word]\" to find number of line that word was display.");
 			draw_new(p->gui.display, "system>> \"/contact\" to show all user on server.");
-			break;
+			werase(p->gui.input);
+			continue;
+		case 8:		/*^W latest line*/
+			werase(p->gui.input);
+			continue;
+		case 15:	/*^O unselect*/
+			werase(p->gui.input);
+			continue;
+		case 18:	/*^R	up one page*/
+			draw_old_line(p->gui.display, 1, (int)get_display_height() - 1);
+			werase(p->gui.input);
+			continue;
+		case 20:	/*^T find text*/
+			werase(p->gui.input);
+			continue;
+		case 25:	/*^Y select a contact*/
+			werase(p->gui.input);
+			continue;
 		default:
 			break;
 		}
+
+        //Draw_new line to display message
+        strcpy(message_buffer_2, "you>> ");
+        strcat(message_buffer_2, message_buffer);
+        draw_new(p->gui.display, message_buffer_2);
+
         //Check exit command
         if (strcmp(message_buffer, ":q!") == 0) {
             //set state to stop all function
@@ -146,8 +176,10 @@ void* typing_func(void *arg)
         }
         else {
 
+			/*
 			wprintw(p->gui.display, "%d\n", message_buffer[0]);
 			wrefresh(p->gui.display);
+			*/
             //Set protocal to send packet
             sprintf(message_buffer_2, "0%s", message_buffer);
             if(send_data(message_buffer_2) == 0)
@@ -155,7 +187,7 @@ void* typing_func(void *arg)
 
         }
 
-		sleep(1);
+		usleep(500000);
         werase(p->gui.input);
 
     }

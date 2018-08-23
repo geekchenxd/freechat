@@ -1,17 +1,19 @@
 #include "client.h"
+#include <locale.h>
 
-extern int display_height;
 int parent_x, parent_y;
 int typing_size;
 
 int init_gui(uint8_t size)
 {
-
 	if (size <= 0)
 		return -2;
 
+	int display_height;
 	typing_size = size;
 
+	/*use the system's locale to support Chinese*/
+	setlocale(LC_ALL, "");
     initscr();
     start_color();
     init_pair(1, COLOR_BLACK, COLOR_GREEN);
@@ -30,7 +32,7 @@ int init_gui(uint8_t size)
     WINDOW *display = newwin(2, parent_x - 2, 1, 1);
     WINDOW *split_line = newwin(1, parent_x - 2, parent_y - size - 3, 1);
 
-    display_height = parent_y - size - 1;
+    display_height = parent_y - size - 3; /*top and bottom line and split line*/
 
     wbkgd(split_line, COLOR_PAIR(3));
     wrefresh(split_line);
@@ -48,8 +50,8 @@ int init_gui(uint8_t size)
     /*wbkgd(display, COLOR_PAIR(1));*/
     /*wrefresh(display);*/
 	/*show fix help information*/
-	char *fix1 = "^G Get help    ^E Quit     ^I Select    ^O Unselect    ^S Search key";
-	char *fix2 = "^F Send File   ^W Latest   ^U Up line   ^D Down line   ^A Show contact";
+	char *fix1 = "^G Get help    ^E Quit     ^Y Select    ^O Unselect    ^T Search key";
+	char *fix2 = "^F Send File   ^W Latest   ^R Up page   ^D Down page   ^A Show contact";
 	char *tmp = (char *)malloc(parent_x - 2);
 	if (!tmp)
 		return -1;
@@ -72,17 +74,17 @@ void show_base_info(WINDOW *display)
     draw_new(display, "--------------------------------------------------\n");
 
 	draw_new(display, "");
-    draw_new(display, "**************************************************\n");
+    draw_new(display, "**************************************************");
 	draw_new(display, " ### HELP ###");
 	draw_new(display, "^G Get this help info.");
 	draw_new(display, "^E To exit from this program.");
-	draw_new(display, "^I Select a contact to chat with.");
+	draw_new(display, "^Y Select a contact to chat with.");
 	draw_new(display, "^O Get out from the contact current chating with.");
-	draw_new(display, "^S Search the key word.");
+	draw_new(display, "^T Search the key word.");
 	draw_new(display, "^F To send file to contact.");
 	draw_new(display, "^W Goto the latest line.");
-	draw_new(display, "^U Scroll screen up a num lines.");
-	draw_new(display, "^D Scroll screen down a num lines.");
+	draw_new(display, "^R Scroll screen up a page.");
+	draw_new(display, "^D Scroll screen down a page.");
 	draw_new(display, "^A To show all friends on line.");
     draw_new(display, "**************************************************\n");
 }
@@ -105,9 +107,10 @@ void cleanup_gui(WINDOW *display, WINDOW *input)
 	if (!display || !input)
 		return;
 
-	draw_new(display, "\n************************************");
-	draw_new(display, "Good bye, See you!!!\n");
-	sleep(2);
+	draw_new(display, "\n**************************************************");
+	draw_new(display, "             Good bye!!!");
+	draw_new(display, "**************************************************\n");
+	sleep(1);
 
 	delwin(display);
 	delwin(input);
