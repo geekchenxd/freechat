@@ -131,8 +131,10 @@ void draw_old_line(WINDOW *display, int option, int line_user_want_scroll){
 
 	for (i=0;i<line_user_want_scroll;i++) {
 		//Set destination of line that program have to read for display from node
-		if (option == 1) desc_line = g_bottom_line - display_height;
-		else if (option == 2) desc_line = g_bottom_line + 1;
+		if (option == 1) 
+			desc_line = g_bottom_line - display_height;
+		else	/* 2 */
+		   	desc_line = g_bottom_line + 1;
 
 		//Initial current pointer for search in linked list
 		current = root;
@@ -159,7 +161,7 @@ void draw_old_line(WINDOW *display, int option, int line_user_want_scroll){
 		else if (option == 2 && g_bottom_line < line_amount) {
 			wscrl(display, 1);
 			wmove(display, display_height - 1, 0);
-			wprintw(display, "%s", current->string);
+			wprintw(display, "%s\n", current->string);
 			g_bottom_line++;
 		}
 	}

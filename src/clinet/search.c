@@ -10,7 +10,6 @@ int search(char *word, WINDOW *display){
 
     int current_line = line_amount - 2;
     int count = 0;
-    int i, j;
     char buffer[LENLINE];
 
     draw_new(display, "system>> ### This /find have error value at 5 line. ###");

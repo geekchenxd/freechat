@@ -11,7 +11,7 @@ void* typing_func(void *arg)
 
     char message_buffer[LENGHT_MESSAGE];
     char message_buffer_2[LENGHT_MESSAGE];
-    char confirm_file[LENGHT_MESSAGE];
+    //char confirm_file[LENGHT_MESSAGE];
     char filename[LENGHT_MESSAGE];
     char ch;
     int buffer_int;
@@ -182,8 +182,10 @@ void* typing_func(void *arg)
 			*/
             //Set protocal to send packet
             sprintf(message_buffer_2, "0%s", message_buffer);
-            if(send_data(message_buffer_2) == 0)
-                draw_new(p->gui.input, "system>> Send failed");
+            if(send_data(message_buffer_2) == 0) {
+				wprintw(p->gui.input, "%s\n", "system>> Send failed");
+				wrefresh(p->gui.input);
+			}
 
         }
 

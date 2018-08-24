@@ -57,9 +57,10 @@ int init_gui(uint8_t size)
 		return -1;
 
 	memcpy(tmp, fix1, strlen(fix1) > (parent_x - 2) ? strlen(fix1) : (parent_x - 2));
-	draw_new(display, tmp);
+	wprintw(display, "%s\n", tmp);
 	memcpy(tmp, fix2, strlen(fix2) > (parent_x - 2) ? strlen(fix2) : (parent_x - 2));
-	draw_new(display, tmp);
+	wprintw(display, "%s\n", tmp);
+	wrefresh(display);
 
 	return 0;
 }

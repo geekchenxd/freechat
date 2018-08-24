@@ -8,10 +8,10 @@ extern char username[LENGHT_USERNAME];
 void* display_func(void *arg) 
 {
 
-    int i, j, error;
+    //int i, j;
     char message_buffer[LENGHT_MESSAGE], message_buffer_2[LENGHT_MESSAGE];
     char filename[LENGHT_MESSAGE];
-    char confirm_file[LENGHT_MESSAGE];
+    //char confirm_file[LENGHT_MESSAGE];
     FILE *fp;
 	struct client *p = (struct client *)arg;
 
@@ -44,7 +44,6 @@ void* display_func(void *arg)
 
             sprintf(message_buffer_2, "downloaded/%s", filename);
             fp = fopen(message_buffer_2, "w+");
-            error = 1;
             do {
                 recieve_file(message_buffer);
                 fprintf(fp, "%c", message_buffer[1]);
