@@ -5,6 +5,82 @@
 extern int state;
 extern int g_bottom_line;
 extern pthread_t *global_display_thread;
+static struct user_list *current;
+
+void remove_current_select(struct client *p)
+{
+	if (!current) {
+		wprintw(p->gui.input, "freechat>> No user has been selected.");
+		wrefresh(p->gui.input);
+		usleep(500000);
+		werase(p->gui.input);
+		wrefresh(p->gui.input);
+		return;
+	}
+
+	wprintw(p->gui.input, "freechat>> Unselect %s\n", current->nickname);
+	current = NULL;
+	usleep(500000);
+	werase(p->gui.single_line);
+	wrefresh(p->gui.single_line);
+	werase(p->gui.input);
+	wrefresh(p->gui.input);
+}
+
+void update_current_select(struct client *p)
+{
+	struct user_list *tmp = NULL;
+	char name[MAXNAMESIZE] = {0x0};
+	WINDOW *display = NULL;
+
+	if (!p)
+		return;
+	display = p->gui.input;
+
+	wprintw(display, "freechat>>(select user:)");
+	wrefresh(display);
+
+	wscanw(display, " %[^\n]s", name);
+	while (strlen(name) > 200) {
+		werase(display);
+		wprintw(display, "freechat>> Message cannot more than 200 characters.\n");
+		wprintw(display, "freechat>> (select user:)");
+		wrefresh(display);
+		wscanw(display, " %[^\n]s", name);
+	}
+
+	tmp = user_list_find(client.user, name);
+	if (!tmp) {
+		wprintw(display, "the user '%s' is not in current list,^A to show all list\n");
+		wrefresh(display);
+		usleep(500000);
+		werase(display);
+		return;
+	}
+
+	current = tmp;
+	werase(p->gui.single_line);
+	wprintw(p->gui.single_line, "freechat>> chating with %s\n", current->nickname);
+	wrefresh(p->gui.single_line);
+	werase(display);
+}
+
+void display_online_user(struct client *client)
+{
+	if (!client)
+		return;
+	int idx = 1;
+	uint8_t show[MAXNAMESIZE + 4] = {0x0};
+
+	struct user_list *tmp = client->user;
+
+	draw_new(client->gui.display, "freechat>> Friends List:");
+	while (tmp) {
+		sprintf(&show[0], "#%d. %s", idx++, tmp->nickname);
+		draw_new(client->gui.display, &show[0]);
+		tmp = tmp->next;
+	}
+}
 
 void* typing_func(void *arg) 
 {
@@ -27,12 +103,13 @@ void* typing_func(void *arg)
         wscanw(p->gui.input, " %[^\n]s", message_buffer);
         while (strlen(message_buffer) > 200) {
             werase(p->gui.input);
-            draw_new(p->gui.display, "system>> Message cannot more than 200 characters.");
+            draw_new(p->gui.display, "freechat>> Message cannot more than 200 characters.");
             wscanw(p->gui.input, " %[^\n]s", message_buffer);
         }
 
 		switch (message_buffer[0]) {
 		case 1:		/*^A show all online contact*/
+			display_online_user(p);
 			werase(p->gui.input);
 			continue;
 		case 4:		/*^D down page */
@@ -47,16 +124,16 @@ void* typing_func(void *arg)
 			werase(p->gui.input);
 			continue;
 		case 7:		/*^G*/
-			draw_new(p->gui.display, "system>> ### THIS IS HELP! ###");
-			draw_new(p->gui.display, "system>> \":q!\" to exit program.");
-			draw_new(p->gui.display, "system>> \"/talkto [nickname]\" to choose contact.");
-			draw_new(p->gui.display, "system>> \"/untalk\" to remove contact that we are talking.");
-			draw_new(p->gui.display, "system>> \"/upload [file]\" to upload file to client that you are talking.");
-			draw_new(p->gui.display, "system>> \"/watline\" to show number of latest line");
-			draw_new(p->gui.display, "system>> \"/up [amount of line]\" to scroll screen up n lines.");
-			draw_new(p->gui.display, "system>> \"/down [amount of line]\" to scroll screen down n lines.");
-			draw_new(p->gui.display, "system>> \"/find [word]\" to find number of line that word was display.");
-			draw_new(p->gui.display, "system>> \"/contact\" to show all user on server.");
+			draw_new(p->gui.display, "freechat>> ### THIS IS HELP! ###");
+			draw_new(p->gui.display, "freechat>> \":q!\" to exit program.");
+			draw_new(p->gui.display, "freechat>> \"/talkto [nickname]\" to choose contact.");
+			draw_new(p->gui.display, "freechat>> \"/untalk\" to remove contact that we are talking.");
+			draw_new(p->gui.display, "freechat>> \"/upload [file]\" to upload file to client that you are talking.");
+			draw_new(p->gui.display, "freechat>> \"/watline\" to show number of latest line");
+			draw_new(p->gui.display, "freechat>> \"/up [amount of line]\" to scroll screen up n lines.");
+			draw_new(p->gui.display, "freechat>> \"/down [amount of line]\" to scroll screen down n lines.");
+			draw_new(p->gui.display, "freechat>> \"/find [word]\" to find number of line that word was display.");
+			draw_new(p->gui.display, "freechat>> \"/contact\" to show all user on server.");
 			werase(p->gui.input);
 			continue;
 		case 8:		/*^W latest line*/
@@ -64,6 +141,7 @@ void* typing_func(void *arg)
 			continue;
 		case 15:	/*^O unselect*/
 			werase(p->gui.input);
+			remove_current_select(p);
 			continue;
 		case 18:	/*^R	up one page*/
 			draw_old_line(p->gui.display, 1, (int)get_display_height() - 1);
@@ -74,6 +152,7 @@ void* typing_func(void *arg)
 			continue;
 		case 25:	/*^Y select a contact*/
 			werase(p->gui.input);
+			update_current_select(p);
 			continue;
 		default:
 			break;
@@ -94,12 +173,12 @@ void* typing_func(void *arg)
             if (split_strcmp(0, 6, "/upload", 0, 6, message_buffer)){
 
                 split_str(8, strlen(message_buffer), message_buffer, filename);
-                sprintf(message_buffer, "3system>> Sending file to you: %s", filename);
+                sprintf(message_buffer, "3freechat>> Sending file to you: %s", filename);
                 //send_data(message_buffer);
 
                 sleep(1);
 
-                draw_new(p->gui.display, "system>> Uploading...");
+                draw_new(p->gui.display, "freechat>> Uploading...");
 
                 fp = fopen(filename, "r");
                 while( ( ch = fgetc(fp) ) != EOF ){
@@ -107,7 +186,7 @@ void* typing_func(void *arg)
                     sprintf(message_buffer, "4%c", ch);
 
                     if(send_data(message_buffer) == 0)
-                        draw_new(p->gui.display, "system>> Send failed");
+                        draw_new(p->gui.display, "freechat>> Send failed");
 
                 }
                 fclose(fp);
@@ -116,7 +195,7 @@ void* typing_func(void *arg)
 
                 strcpy(message_buffer, "5");
                 send_data(message_buffer);
-                draw_new(p->gui.display, "system>> Done!");
+                draw_new(p->gui.display, "freechat>> Done!");
 
             }
             else if (split_strcmp(0, 2, "/up", 0, 2, message_buffer)){
@@ -135,16 +214,16 @@ void* typing_func(void *arg)
             }
             else if (split_strcmp(0, 4, "/help", 0, 4, message_buffer)){
 
-                draw_new(p->gui.display, "system>> ### THIS IS HELP! ###");
-                draw_new(p->gui.display, "system>> \":q!\" to exit program.");
-                draw_new(p->gui.display, "system>> \"/talkto [nickname]\" to choose contact.");
-                draw_new(p->gui.display, "system>> \"/untalk\" to remove contact that we are talking.");
-                draw_new(p->gui.display, "system>> \"/upload [file]\" to upload file to client that you are talking.");
-                draw_new(p->gui.display, "system>> \"/watline\" to show number of latest line");
-                draw_new(p->gui.display, "system>> \"/up [amount of line]\" to scroll screen up n lines.");
-                draw_new(p->gui.display, "system>> \"/down [amount of line]\" to scroll screen down n lines.");
-                draw_new(p->gui.display, "system>> \"/find [word]\" to find number of line that word was display.");
-                draw_new(p->gui.display, "system>> \"/contact\" to show all user on server.");
+                draw_new(p->gui.display, "freechat>> ### THIS IS HELP! ###");
+                draw_new(p->gui.display, "freechat>> \":q!\" to exit program.");
+                draw_new(p->gui.display, "freechat>> \"/talkto [nickname]\" to choose contact.");
+                draw_new(p->gui.display, "freechat>> \"/untalk\" to remove contact that we are talking.");
+                draw_new(p->gui.display, "freechat>> \"/upload [file]\" to upload file to client that you are talking.");
+                draw_new(p->gui.display, "freechat>> \"/watline\" to show number of latest line");
+                draw_new(p->gui.display, "freechat>> \"/up [amount of line]\" to scroll screen up n lines.");
+                draw_new(p->gui.display, "freechat>> \"/down [amount of line]\" to scroll screen down n lines.");
+                draw_new(p->gui.display, "freechat>> \"/find [word]\" to find number of line that word was display.");
+                draw_new(p->gui.display, "freechat>> \"/contact\" to show all user on server.");
 
             }
             else if (split_strcmp(0, 4, "/find", 0, 4, message_buffer)){
@@ -156,7 +235,7 @@ void* typing_func(void *arg)
             else if (split_strcmp(0, 7, "/watline", 0, 7, message_buffer)){
 
                 //bottom_line come from buffer_screen.h
-                sprintf(message_buffer, "system>> v This is lines number %d. v", g_bottom_line);
+                sprintf(message_buffer, "freechat>> v This is lines number %d. v", g_bottom_line);
                 draw_new(p->gui.display, message_buffer);
 
             }
@@ -169,9 +248,7 @@ void* typing_func(void *arg)
                 send_data(message_buffer_2);
             }
             else {
-
-                draw_new(p->gui.display, "system>> Command not found.");
-
+                draw_new(p->gui.display, "freechat>> Command not found.");
             }
         }
         else {
@@ -183,7 +260,7 @@ void* typing_func(void *arg)
             //Set protocal to send packet
             sprintf(message_buffer_2, "0%s", message_buffer);
             if(send_data(message_buffer_2) == 0) {
-				wprintw(p->gui.input, "%s\n", "system>> Send failed");
+				wprintw(p->gui.input, "%s\n", "freechat>> Send failed");
 				wrefresh(p->gui.input);
 			}
 

@@ -38,15 +38,15 @@ struct user_list *user_list_init_user(
 	return user;
 }
 
-void user_list_add(struct user_list *head, struct user_list *new)
+void user_list_add(struct user_list **head, struct user_list *new)
 {
 	if (!new)
 		return;
 
-	if (!head)
-		head = new;
+	if (!*head)
+		*head = new;
 	else
-		head->next = new;
+		(*head)->next = new;
 }
 
 struct user_list *user_list_find(struct user_list *head, char *nickname)

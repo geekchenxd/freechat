@@ -12,3 +12,8 @@ make,then you will get your lib file ./lib/.lib/libconfig.a and head file
 ./lib/libconfig.h
 
 Or you can cd to the lib directory and execute make commands directly.
+
+
+
+System install libconfig for ubuntu:
+sudo apt-get install libconfig-dev

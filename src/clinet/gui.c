@@ -92,7 +92,7 @@ void show_base_info(WINDOW *display)
 
 WINDOW *get_display()
 {
-    WINDOW *display = newwin(parent_y - typing_size - 4 - 3, parent_x - 2, 1 + 3, 1);
+    WINDOW *display = newwin(parent_y - typing_size - 4 - 3, parent_x - 2, 4, 1);
     scrollok(display, 1);
 	return display;
 }
@@ -101,6 +101,12 @@ WINDOW *get_typing()
 {
     WINDOW *input = newwin(typing_size, parent_x - 2, parent_y - typing_size - 2, 1);
 	return input;
+}
+
+WINDOW *get_single_line()
+{
+    WINDOW *single_line = newwin(1, parent_x - 2, 3, 1);
+	return single_line;
 }
 
 void cleanup_gui(WINDOW *display, WINDOW *input)

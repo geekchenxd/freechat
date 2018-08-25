@@ -11,7 +11,7 @@ AR	:= $(CROSS)ar
 TARGETDIR:= $(PWD)
 INCLUDE	:= $(PWD)/include
 CFLAGS	:= -Wall -O2 -g -I$(INCLUDE)
-LDFLAGS	:= -lpthread -lncursesw #-L$(PWD)/lib -liec101
+LDFLAGS	:= -lpthread -lncursesw -lconfig #-L$(PWD)/lib -liec101
 TOPDIR	:= $(PWD)
 
 export CFLAGS TOPDIR CC AR

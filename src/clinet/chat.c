@@ -15,6 +15,7 @@
 #include "search.h"
 #include "display.h"
 #include "typing.h"
+#include "config.h"
 
 
 pthread_t *global_typing_thread, *global_display_thread;
@@ -75,6 +76,11 @@ int main(int argc , char *argv[])
 	sigaction(SIGINT, &sig, NULL);
 
 	terminal_init();
+	/* parser configure file */
+	if (config_parser(CONFIGFILEPATH, &client.info)) {
+		fprintf(stderr, "init configure failed\n");
+		exit(1);
+	}
 
 	/* init graphyics */
 	p->gui.input_line = 4;
@@ -84,6 +90,7 @@ int main(int argc , char *argv[])
 	}
 	p->gui.display = get_display();
 	p->gui.input = get_typing();
+	p->gui.single_line = get_single_line();
 	show_base_info(p->gui.display);
 
     //prepare to pthread_create with WINDOW *buffer_window[2];

@@ -9,10 +9,12 @@
 
 #define LENGHT_USERNAME 255
 #define LENGHT_MESSAGE 255
+#define CONFIGFILEPATH "/home/fighterchen/freechat.cfg"
 
 struct gui {
 	WINDOW *display;
 	WINDOW *input;
+	WINDOW *single_line;
 	uint8_t input_line;
 };
 
@@ -20,6 +22,7 @@ struct info {
 	uint8_t serverip[16];
 	uint16_t serverport;
 	uint16_t local_port;
+	uint16_t port_local;
 };
 
 struct client {
@@ -27,5 +30,7 @@ struct client {
 	struct info info;
 	struct user_list *user;
 };
+
+extern struct client client;
 
 #endif

@@ -2,6 +2,7 @@
 #define _SCREEN_H_
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <ncurses.h>
 
 #define LENLINE 500 //define limit lenght of each one line

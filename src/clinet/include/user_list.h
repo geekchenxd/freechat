@@ -24,7 +24,7 @@ struct user_list {
 struct user_list *user_list_init_user(
 		char *nickname, char *ip, uint16_t port,
 		uint16_t addr);
-void user_list_add(struct user_list *head,
+void user_list_add(struct user_list **head,
 		struct user_list *new);
 struct user_list *user_list_find(struct user_list *head, char *nickname);
 void user_list_del(struct user_list *head, char *nickname);
