@@ -69,14 +69,18 @@ void show_base_info(WINDOW *display)
 {
 	if (!display)
 		return;
+	static bool flag_t = false;
+	static bool flag_h = false;
 
-    draw_new(display, "--------------------------------------------------");
-    draw_new(display, "             Welcome to Free Chat!            ");
-    draw_new(display, "--------------------------------------------------\n");
+	if (!flag_t) {
+		draw_new(display, "--------------------------------------------------");
+		draw_new(display, "             Welcome to Free Chat!            ");
+		draw_new(display, "--------------------------------------------------\n");
+		flag_t = true;
+	}
 
-	draw_new(display, "");
     draw_new(display, "**************************************************");
-	draw_new(display, " ### HELP ###");
+	draw_new(display, " ### FREECHAT HELP ###");
 	draw_new(display, "^G Get this help info.");
 	draw_new(display, "^E To exit from this program.");
 	draw_new(display, "^Y Select a contact to chat with.");

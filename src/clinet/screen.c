@@ -95,6 +95,9 @@ void draw_new(WINDOW *display, char *string){
 		wprintw(display, "\n");
 	}
 
+	if (!string)
+		return;
+
 	//Add new line into node-linked list
 	add_line(string);
 
