@@ -65,9 +65,49 @@ void update_current_select(struct client *p)
 	werase(display);
 }
 
-void search_text(struct client *p)
+void send_file(struct client *p)
 {
 	struct user_list *tmp = NULL;
+	char name[MAXNAMESIZE] = {0x0};
+	WINDOW *display = NULL;
+
+	if (!p)
+		return;
+
+	display = p->gui.input;
+
+	tmp = current;
+	if (tmp == NULL) {
+		werase(display);
+		wprintw(display, "freechat>> Please select contact first!\n");
+		wrefresh(display);
+		usleep(500000);
+		werase(display);
+		return;
+	}
+
+
+	wprintw(display, "freechat>>(file path:)");
+	wrefresh(display);
+
+	wscanw(display, " %[^\n]s", name);
+	while (strlen(name) > 200) {
+		werase(display);
+		wprintw(display, "freechat>> Message cannot more than 200 characters.\n");
+		wprintw(display, "freechat>> (file path:)");
+		wrefresh(display);
+		wscanw(display, " %[^\n]s", name);
+	}
+
+	werase(display);
+	wprintw(display, "freechat>> Sending file %s\n", name);
+	wrefresh(display);
+	usleep(500000);
+	werase(display);
+}
+
+void search_text(struct client *p)
+{
 	char name[MAXNAMESIZE] = {0x0};
 	WINDOW *display = NULL;
 
@@ -158,9 +198,10 @@ void* typing_func(void *arg)
 		case 5:		/*^E*/
 			state = 1;
 			werase(p->gui.input);
-			break;
+			continue;
 		case 6:		/*^F send file*/
 			werase(p->gui.input);
+			send_file(p);
 			continue;
 		case 7:		/*^G*/
 			werase(p->gui.input);
