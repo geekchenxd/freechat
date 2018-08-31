@@ -220,6 +220,7 @@ void* typing_func(void *arg)
 			search_text(p);
 			continue;
 		case 23:		/*^W latest line*/
+			werase(p->gui.input);
 			draw_new(p->gui.display, NULL);
 			continue;
 		case 25:	/*^Y select a contact*/
