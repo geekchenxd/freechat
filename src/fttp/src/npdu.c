@@ -43,3 +43,12 @@ void npdu_handler(struct fttp_addr *src, uint8_t *pdu,
 		debug(INFO, "fttp decode npdu error!\n")
 	}
 }
+
+uint16_t encode_npdu(uint8_t *npdu)
+{
+	if (!npdu)
+		return 0;
+
+	npdu[0] = FTTP_PROTOCOL_VERSION;
+	return 1;
+}

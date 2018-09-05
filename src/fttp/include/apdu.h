@@ -8,6 +8,7 @@
 #include "file.h"
 #include "fttp_enum.h"
 #include "fttp_default.h"
+#include "fttp_udp.h"
 
 
 uint8_t apdu_retry(void);
@@ -17,6 +18,8 @@ void apdu_timeout_set(uint32_t timeout);
 void apdu_service_init(void);
 void apdu_handler(struct fttp_addr *src,
 		uint8_t *apdu, uint16_t pdu_len);
+uint16_t encode_apdu_common(uint8_t *apdu, enum pdu_type pdu_type,
+		enum fttp_service service);
 
 
 

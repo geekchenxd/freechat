@@ -13,6 +13,13 @@
 #define FTTP_BROADCAST_ADDR (0xFFFF)
 #define MAX_MAC_LEN 7
 
+#define FTTPMAXNAMESIZE 40
+#define FTTPMAXSIGNATURESIZE 200
+#define FTTPMAXBIRTHDAYSIZE	10
+
+#define MAX_APDU 1248
+#define MAX_PDU MAX_APDU + 2
+
 struct fttp_addr {
 	/*addr_len is 0 indicate a broadcast address*/
 	uint8_t addr_len;

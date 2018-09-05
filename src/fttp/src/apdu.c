@@ -119,3 +119,14 @@ void apdu_handler(struct fttp_addr *src,
 	}
 }
 
+uint16_t encode_apdu_common(uint8_t *apdu, enum pdu_type pdu_type,
+		enum fttp_service service)
+{
+	if (!apdu)
+		return 0;
+
+	apdu[0] = (uint8_t)pdu_type;
+	apdu[1] = (uint8_t)service;
+
+	return 2;
+}

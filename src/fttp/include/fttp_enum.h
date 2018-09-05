@@ -18,4 +18,15 @@ enum pdu_type {
 	FTTP_PDU_TYPE_MAX
 };
 
+enum fttp_user_type {
+	FTTP_USER_BOY = 0,
+	FTTP_USER_GIRL = 1,
+	FTTP_USER_ROOM = 2
+};
+
+enum fttp_value_tag {
+	FTTP_VALUE_UINT = 0,
+	FTTP_VALUE_STRING,
+	FTTP_VALUE_ENUM
+};
 #endif
