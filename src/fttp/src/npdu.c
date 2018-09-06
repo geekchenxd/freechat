@@ -1,8 +1,8 @@
 /*
  * We do not support more network layer function currently.
  */
-#include "npdu.h"
 #include "apdu.h"
+#include "npdu.h"
 #include "fttp_default.h"
 #include "debug.h"
 
@@ -35,12 +35,12 @@ void npdu_handler(struct fttp_addr *src, uint8_t *pdu,
 
 	decode_len = npdu_decode(pdu, &npdu_data);
 	debug(DEBUG, "the fttp protocol version is %d\n",
-			npdu_data.procotol_version);
+			npdu_data.protocol_version);
 	if ((decode_len > 0) && (decode_len < pdu_len)) {
 		pdu_len -= decode_len;
 		apdu_handler(src, &pdu[decode_len], pdu_len);
 	} else {
-		debug(INFO, "fttp decode npdu error!\n")
+		debug(INFO, "fttp decode npdu error!\n");
 	}
 }
 

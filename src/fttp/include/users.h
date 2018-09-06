@@ -1,8 +1,10 @@
 #ifndef __USERS_H__
 #define __USERS_H__
-#include "fttp_enum.h"
 #include "fttp_default.h"
 #include "debug.h"
+#include "decode.h"
+#include "apdu.h"
+#include "npdu.h"
 
 struct type_user {
 	uint16_t id;

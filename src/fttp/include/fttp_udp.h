@@ -1,5 +1,6 @@
 #ifndef _FTTP_UDP_H_
 #define _FTTP_UDP_H_
+#include <stdbool.h>
 
 void fttp_set_socket(int fd);
 int fttp_get_socket(void);

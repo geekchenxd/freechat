@@ -88,8 +88,8 @@ int fttp_decode_address(
 	if (!addr)
 		return 0;
 
-	memcpy(&address->s_addr, &addr->mac[0], 4);
-	memcpy(port, &addr->mac[4], 2);
+	memcpy(&address->s_addr, &addr->addr[0], 4);
+	memcpy(port, &addr->addr[4], 2);
 
 	return 6;
 }
@@ -188,7 +188,7 @@ int32_t fttp_send_udp(struct fttp_addr *dest,
 		return fttp_socket;
 
 	if (dest->addr_len == 0) { /*broadcast*/
-		address.s_addr = fttp_broadcast.s_addr;
+		address.s_addr = fttp_broadcast_addr.s_addr;
 		port = fttp_port;
 	} else { /*dest->addr_len == 6*/
 		fttp_decode_addr(dest, &address, &port);
@@ -219,7 +219,7 @@ bool fttp_init_udp(void)
 	fttp_set_socket(sockfd);
 
 	sockopt = 1;
-	status = setsockopt(sockfd, SOL_SOCKET< SO_REUSEADDR, &sockopt, 
+	status = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &sockopt, 
 			sizeof(sockopt));
 	if (status < 0) {
 		close(sockfd);
@@ -240,7 +240,7 @@ bool fttp_init_udp(void)
 	sin.sin_addr.s_addr = htonl(INADDR_ANY);
 	sin.sin_port = fttp_get_port();
 	memset(&(sin.sin_zero), '\0', sizeof(sin.sin_zero));
-	status = bind(sock_fd, (const struct sockaddr *)&sin, sizeof(struct sockaddr));
+	status = bind(sockfd, (const struct sockaddr *)&sin, sizeof(struct sockaddr));
 	if (status < 0) {
 		close(sockfd);
 		fttp_set_socket(-1);

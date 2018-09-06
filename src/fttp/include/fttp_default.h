@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#define FTTP_SIGNATURE 0x68
 #define FTTP_PROTOCOL_VERSION 1
 
 #ifndef FTTP_PROTOCOL_REVERSION

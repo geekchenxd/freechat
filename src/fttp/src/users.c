@@ -1,5 +1,8 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "users.h"
 
 
 static int fttp_user_rsp_decode(uint8_t *data, uint16_t data_len,
@@ -67,15 +70,15 @@ void handler_user_rsp(uint8_t *data, uint16_t data_len,
 		return;
 	}
 	/*here to handle the user info*/
-	debug(info, "receive a user rsp %u from IP:%s\n"
+	debug(INFO, "receive a user rsp %u from IP:%s\n",
 			new->id, src->addr);
-	debug(info, "name:%s\n", new->name);
-	debug(info, "signature:%s\n", new->signature);
-	debug(info, "birthday:%s\n", new->birthday);
+	debug(INFO, "name:%s\n", new->name);
+	debug(INFO, "signature:%s\n", new->signature);
+	debug(INFO, "birthday:%s\n", new->birthday);
 	if (new->sex == FTTP_USER_ROOM)
-		debug(info, "this user is a chating room!\n");
+		debug(INFO, "this user is a chating room!\n");
 	else
-		debug(info, "sex:%s\n",
+		debug(INFO, "sex:%s\n",
 				(new->sex == FTTP_USER_BOY) ? "boy" : "girl");
 
 	/*release resource*/
@@ -99,7 +102,7 @@ void send_user_rsp(struct fttp_addr *dest,
 	
 	len = encode_npdu(&npdu[pdu_len]);
 	pdu_len += len;
-	len = encode_apdu_common(&npdu[pdu_len], FTTP_PDU_TYPE_COMPLEX, 
+	len = encode_apdu_common(&npdu[pdu_len], FTTP_PDU_RSP_COMPLEX, 
 			FTTP_SERVICE_USER_RSP);
 	pdu_len += len;
 	

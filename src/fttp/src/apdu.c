@@ -4,12 +4,12 @@
 /*
  * apdu timeout indicate the longest time that a session wait for reply.
  */
-static uint32_t apdu_timeout = 3000;
+static uint32_t fttp_apdu_timeout = 3000;
 /*
  * apdu_retry indicate once the session waiting reply timeout, how many
  * times the request of this session will be retried.
  */
-static uint8_t apdu_retry = 1;
+static uint8_t fttp_apdu_retry = 1;
 
 /*
  * messages hanler function.
@@ -24,22 +24,22 @@ static void (*error_handle)(uint8_t, uint16_t, struct fttp_addr *, uint8_t);
 
 uint8_t apdu_retry(void)
 {
-	return apdu_retry;
+	return fttp_apdu_retry;
 }
 
 void apdu_retry_set(uint8_t count)
 {
-	apdu_retry = count;
+	fttp_apdu_retry = count;
 }
 
 uint32_t apdu_timeout(void)
 {
-	return apdu_timeout;
+	return fttp_apdu_timeout;
 }
 
 void apdu_timeout_set(uint32_t timeout)
 {
-	apdu_timeout = timeout
+	fttp_apdu_timeout = timeout;
 }
 
 /*
@@ -51,8 +51,8 @@ void apdu_service_init(void)
 	trans_text_handle = handler_trans_text;
 	user_req_handle = handler_user_req;
 	user_rsp_handle = handler_user_rsp;
-	error_handle = hanler_error;
-	test_handle = handler_test;
+	//error_handle = hanler_error;
+	//test_handle = handler_test;
 }
 
 /*
@@ -111,7 +111,7 @@ void apdu_handler(struct fttp_addr *src,
 		if (apdu[1] == FTTP_SERVICE_USER_RSP)
 			if (user_rsp_handle)
 				user_rsp_handle(&apdu[decode_len],
-						pdu_len - decode_len, src, session_id);
+						pdu_len - decode_len, src);
 		break;
 	case FTTP_PDU_ERROR:
 		session_clear(session_id);
