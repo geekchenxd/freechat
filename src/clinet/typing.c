@@ -22,6 +22,7 @@ void remove_current_select(struct client *p)
 	current = NULL;
 	usleep(500000);
 	werase(p->gui.single_line);
+    wbkgd(p->gui.single_line, COLOR_PAIR(4));
 	wrefresh(p->gui.single_line);
 	werase(p->gui.input);
 	wrefresh(p->gui.input);
@@ -60,6 +61,7 @@ void update_current_select(struct client *p)
 
 	current = tmp;
 	werase(p->gui.single_line);
+    wbkgd(p->gui.single_line, COLOR_PAIR(3));
 	wprintw(p->gui.single_line, "freechat>> chating with %s\n", current->nickname);
 	wrefresh(p->gui.single_line);
 	werase(display);
