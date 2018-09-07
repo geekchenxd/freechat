@@ -16,7 +16,6 @@ struct fttp_session {
 	uint16_t pdu_len;
 };
 
-static uint8_t session_get_index(uint8_t id);
 uint8_t fttp_free_session(void);
 void fttp_session_set(uint8_t id, struct fttp_addr *dest,
 		uint8_t *pdu, uint16_t pdu_len);

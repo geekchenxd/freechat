@@ -1,10 +1,10 @@
 SUBDIRS	:= src
+DEMODIR	:= demo
 .PHONY:	$(SUBDIRS)
 
-APPS	:= fttp
+DEMO	:= fttp
 OBJS	:= $(patsubst %.c, %.o, $(wildcard *.c))
 
-#CROSS	:= arm-embedsky-linux-gnueabi-
 CROSS	?=
 CC	:= $(CROSS)gcc
 AR	:= $(CROSS)ar
@@ -21,8 +21,7 @@ all: $(OBJS)
 		do $(MAKE) -C $$dir all CC=$(CC) AR=$(AR); \
 	done
 
-	$(CC) $(OBJS) -o $(APPS) $(LDFLAGS)
-	size $(APPS)
+	$(MAKE) -C $(DEMODIR) all CC=$(CC)
 
 clean:
 	rm -f $(APPS) $(OBJS)
@@ -30,3 +29,5 @@ clean:
 	@for dir in $(SUBDIRS); \
 		do $(MAKE) -C $$dir clean; \
 	done
+
+	$(MAKE) -C $(DEMODIR) clean

@@ -182,7 +182,9 @@ void* typing_func(void *arg)
         wscanw(p->gui.input, " %[^\n]s", message_buffer);
         while (strlen(message_buffer) > 200) {
             werase(p->gui.input);
-            draw_new(p->gui.display, "freechat>> Message cannot more than 200 characters.");
+            draw_new(p->gui.input, "freechat>> Message cannot more than 200 characters.");
+			sleep(1);
+            werase(p->gui.input);
             wscanw(p->gui.input, " %[^\n]s", message_buffer);
         }
 

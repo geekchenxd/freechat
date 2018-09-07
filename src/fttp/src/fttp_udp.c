@@ -129,23 +129,23 @@ uint16_t fttp_receive_udp (
     FD_ZERO(&fds);
     FD_SET(fttp_socket, &fds);
     max = fttp_socket;
-    if (select(max + 1, &fds, NULL, NULL, &select_timeout) > 0)
+    if (select(max + 1, &fds, NULL, NULL, &select_timeout) > 0) {
         recv_bytes =
             recvfrom(fttp_socket, (char *) &pdu[0], max_pdu, 0,
             (struct sockaddr *) &sin, &sin_len);
-    else
+	} else {
         return 0;
+	}
 
-    if (recv_bytes < 0) {
+    if (recv_bytes < 0)
         return 0;
-    }
 
     if (recv_bytes == 0)
         return 0;
 
     /* the signature of a fttp packet */
-    if (pdu[0] != FTTP_SIGNATURE)
-        return 0;
+	if (pdu[0] != (uint8_t)FTTP_SIGNATURE)
+		return 0;
 	recv_bytes -= 1;
 
 	/* if the message is from myself, ignore it */
@@ -191,7 +191,7 @@ int32_t fttp_send_udp(struct fttp_addr *dest,
 		address.s_addr = fttp_broadcast_addr.s_addr;
 		port = fttp_port;
 	} else { /*dest->addr_len == 6*/
-		fttp_decode_addr(dest, &address, &port);
+		fttp_decode_address(dest, &address, &port);
 	}
 
 	fttp_dest.sin_addr.s_addr = address.s_addr;

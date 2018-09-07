@@ -109,16 +109,19 @@ void send_user_rsp(struct fttp_addr *dest,
 	len = fttp_encode_id(&npdu[pdu_len], me->id);
 	pdu_len += len;
 
-	len = fttp_encode_string(&npdu[pdu_len], me->name, strlen(me->name));
+	len = fttp_encode_string(&npdu[pdu_len], (uint8_t *)me->name, 
+			(uint32_t)strlen(me->name));
 	pdu_len += len;
 
-	len = fttp_encode_string(&npdu[pdu_len], me->signature, strlen(me->signature));
+	len = fttp_encode_string(&npdu[pdu_len], (uint8_t *)me->signature, 
+			(uint32_t)strlen(me->signature));
 	pdu_len += len;
 
-	len = fttp_encode_string(&npdu[pdu_len], me->birthday, sizeof(me->birthday));
+	len = fttp_encode_string(&npdu[pdu_len], (uint8_t *)me->birthday, 
+			(uint32_t)sizeof(me->birthday));
 	pdu_len += len;
 
-	len = fttp_encode_enum(&npdu[pdu_len], me->sex);
+	len = fttp_encode_enum(&npdu[pdu_len], (uint8_t)me->sex);
 	pdu_len += len;
 
 	fttp_send_udp(&tmp, &npdu[0], pdu_len);

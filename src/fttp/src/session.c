@@ -1,6 +1,7 @@
 /*
  * session menagement
  */
+#include <string.h>
 #include "session.h"
 #include "apdu.h"
 
@@ -104,7 +105,7 @@ bool fttp_session_get(uint8_t id, struct fttp_addr *dest,
 
 	idx = session_get_index(id);
 	if (idx == MAX_FTTP_SESSION)
-		return;
+		return false;
 
 	*pdu_len = session[idx].pdu_len;
 	for (i = 0; i < *pdu_len; i++)

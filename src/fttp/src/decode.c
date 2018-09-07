@@ -170,7 +170,6 @@ int fttp_decode_enum(uint8_t *data, uint8_t *value)
 	int decode_len = 0;
 	int len = 0;
 	enum fttp_value_tag tag;
-	uint32_t data_len = 0; 
 
 	if (!data || !value)
 		return 0;

@@ -19,7 +19,7 @@ static void (*trans_text_handle)(uint8_t *, uint16_t, struct fttp_addr *, uint8_
 static void (*test_handle)(uint8_t *, uint16_t, struct fttp_addr *, uint8_t);
 static void (*user_req_handle)(uint8_t *, uint16_t, struct fttp_addr *);
 static void (*user_rsp_handle)(uint8_t *, uint16_t, struct fttp_addr *);
-static void (*error_handle)(uint8_t, uint16_t, struct fttp_addr *, uint8_t);
+//static void (*error_handle)(uint8_t, uint16_t, struct fttp_addr *, uint8_t);
 
 
 uint8_t apdu_retry(void)
@@ -105,7 +105,7 @@ void apdu_handler(struct fttp_addr *src,
 		}
 		break;
 	case FTTP_PDU_RSP_SIMPLE:
-		session_clear(session_id);
+		fttp_session_clear(session_id);
 		break;
 	case FTTP_PDU_RSP_COMPLEX:
 		if (apdu[1] == FTTP_SERVICE_USER_RSP)
@@ -114,7 +114,7 @@ void apdu_handler(struct fttp_addr *src,
 						pdu_len - decode_len, src);
 		break;
 	case FTTP_PDU_ERROR:
-		session_clear(session_id);
+		fttp_session_clear(session_id);
 		break;
 	}
 }
