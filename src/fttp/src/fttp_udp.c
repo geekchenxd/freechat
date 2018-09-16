@@ -10,6 +10,14 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <netdb.h>
+#include <sys/uio.h>
+#include <sys/un.h>
+#include <sys/wait.h>
+#include <net/route.h>
+#include <net/if.h>
+#include <net/if_arp.h>
+#include <sys/ioctl.h>
 #include "fttp_default.h"
 #include "fttp_udp.h"
 #include "debug.h"
@@ -56,6 +64,7 @@ void fttp_set_broadcast_addr(uint32_t addr)
 	fttp_broadcast_addr.s_addr = addr;
 }
 
+/* return network byte order */
 uint32_t fttp_get_broadcast_addr(void)
 {
 	return fttp_broadcast_addr.s_addr;
@@ -132,7 +141,7 @@ uint16_t fttp_receive_udp (
     if (select(max + 1, &fds, NULL, NULL, &select_timeout) > 0) {
         recv_bytes =
             recvfrom(fttp_socket, (char *) &pdu[0], max_pdu, 0,
-            (struct sockaddr *) &sin, &sin_len);
+            (struct sockaddr *)&sin, &sin_len);
 	} else {
         return 0;
 	}
@@ -150,8 +159,10 @@ uint16_t fttp_receive_udp (
 
 	/* if the message is from myself, ignore it */
 	if ((sin.sin_addr.s_addr == fttp_address.s_addr) &&
-			(sin.sin_port == fttp_port))
+			(sin.sin_port == fttp_port)) {
+		debug(INFO, "Recv Frome Me, ifnaored.\n");
 		return 0;
+	}
 
 	/* copy the addr to high user */
 	src->addr_len = 6;
@@ -194,24 +205,96 @@ int32_t fttp_send_udp(struct fttp_addr *dest,
 		fttp_decode_address(dest, &address, &port);
 	}
 
+	fttp_dest.sin_family = AF_INET;
 	fttp_dest.sin_addr.s_addr = address.s_addr;
 	fttp_dest.sin_port = port;
 	memset(&(fttp_dest.sin_zero), '\0', 8);
 
     buf[0] = FTTP_SIGNATURE;
 	memcpy(&buf[1], pdu, pdu_len);
-	bytes_sent = sendto(fttp_socket, (char *)buf, pdu_len, 0,
+	bytes_sent = sendto(fttp_socket, (char *)buf, pdu_len + 1, 0,
 			(struct sockaddr *)&fttp_dest, sizeof(struct sockaddr));
+	if (bytes_sent > 0) {
+		debug(DEBUG, "UDP send data len = %d\n", bytes_sent);
+	} else {
+		debug(DEBUG, "UDP send data failed!\n");
+		perror("");
+	}
 
 	return bytes_sent;
 }
 
-bool fttp_init_udp(void)
+static int get_local_ifr_ioctl(char *ifname, 
+		struct ifreq *ifr, int opt)
+{
+	int fd;
+	int ret;
+	strncpy(ifr->ifr_name, ifname, sizeof(ifr->ifr_name));
+	fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+	if (fd < 0) {
+		ret = fd;
+	} else {
+		ret = ioctl(fd, opt, ifr);
+		close(fd);
+	}
+
+	return ret;
+}
+
+static int get_local_address_ioctl(char *ifname, 
+		struct in_addr *addr, int opt)
+{
+	struct ifreq ifr = { {{0}} };
+	struct sockaddr_in *tcpip_addr;
+	int ret;
+
+	ret = get_local_ifr_ioctl(ifname, &ifr, opt);
+	if (ret >= 0) {
+		tcpip_addr = (struct sockaddr_in *)&ifr.ifr_addr;
+		memcpy(addr, &tcpip_addr->sin_addr, sizeof(struct in_addr));
+	}
+
+	return ret;
+}
+
+void fttp_set_interface(
+		char *ifname)
+{
+	struct in_addr local_addr;
+	struct in_addr bcast_addr;
+	struct in_addr netmask;
+	int ret = 0;
+
+	ret = get_local_address_ioctl(ifname, &local_addr, SIOCGIFADDR);
+	if (ret < 0)
+		local_addr.s_addr = 0;
+	fttp_set_addr(local_addr.s_addr);
+	debug(INFO, "Interface:%s, IP address:%s\n", ifname, inet_ntoa(local_addr));
+
+	ret = get_local_address_ioctl(ifname, &netmask, SIOCGIFNETMASK);
+	if (ret < 0) {
+		bcast_addr.s_addr = ~0;
+	} else {
+		bcast_addr = local_addr;
+		bcast_addr.s_addr |= (~netmask.s_addr);
+	}
+	fttp_set_broadcast_addr(bcast_addr.s_addr);
+	debug(INFO, "Bcast:%s\n", inet_ntoa(bcast_addr));
+	debug(INFO, "UDP Port:0x%04x [%hu]\n", ntohs(fttp_get_port()),
+			ntohs(fttp_get_port()));
+}
+
+bool fttp_init_udp(char *ifname)
 {
 	int status = 0;
 	struct sockaddr_in sin;
 	int sockopt = 0;
 	int sockfd = -1;
+
+	if (ifname)
+		fttp_set_interface(ifname);
+	else /*default*/
+		fttp_set_interface("eth0");
 
 	sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sockfd < 0)

@@ -60,7 +60,7 @@ uint8_t fttp_free_session(void)
 					session_id = 1;
 			}
 		} else {
-			/*session_id found so we try net noe*/
+			/*session_id found so we try next noe*/
 			session_id++;
 			if (session_id == 0)
 				session_id = 1;

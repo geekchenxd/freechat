@@ -20,4 +20,6 @@ void handler_user_rsp(uint8_t *data, uint16_t data_len,
 		struct fttp_addr *src);
 void send_user_rsp(struct fttp_addr *dest, 
 		struct type_user *me);
+void send_user_req();
+void *user_id_consult(void *arg);
 #endif

@@ -21,6 +21,11 @@
 #define MAX_APDU 1248
 #define MAX_PDU MAX_APDU + 2
 
+#ifndef FTTP_PORT
+#define FTTP_PORT 8424 /*0x20E8*/
+#endif
+#define FTTP_MAX_TEXT_SIZE 200
+
 struct fttp_addr {
 	/*addr_len is 0 indicate a broadcast address*/
 	uint8_t addr_len;

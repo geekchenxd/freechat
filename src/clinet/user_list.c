@@ -4,23 +4,31 @@
 static struct user_list *user_list_create_user(void)
 {
 	struct user_list *user = NULL;
+	struct type_user *p = NULL;
+
 	user = (struct user_list *)malloc(sizeof(struct user_list));
 	if (!user) {
 		fprintf(stderr, "Create user failed\n");
 		return NULL;
 	}
 	memset(user, 0x0, sizeof(struct user_list));
+	p = (struct type_user *)malloc(sizeof(struct type_user));
+	if (!p) {
+		fprintf(stderr, "Create user p failed\n");
+		return NULL;
+	}
+	memset(p, 0x0, sizeof(struct user_list));
+	user->user = p;
 
 	return user;
 }
 
 struct user_list *user_list_init_user(
-		char *nickname, char *ip, uint16_t port,
-		uint16_t addr)
+		char *nickname, uint16_t addr)
 {
 	struct user_list *user = NULL;
 
-	if (!nickname || !ip) {
+	if (!nickname) {
 		fprintf(stderr, "no nickname or invalid ip addr\n");
 		return NULL;
 	}
@@ -28,10 +36,8 @@ struct user_list *user_list_init_user(
 	user = user_list_create_user();
 	if (user) {
 		user->online = true;
-		user->addr = addr;
-		user->port = port;
-		memcpy(&user->nickname[0], nickname, sizeof(user->nickname));
-		memcpy(&user->ip[0], ip, sizeof(user->ip));
+		user->user->id = addr;
+		memcpy(&user->user->name[0], nickname, sizeof(user->user->name));
 		user->next = NULL;
 	}
 
@@ -59,7 +65,7 @@ struct user_list *user_list_find(struct user_list *head, char *nickname)
 	tmp = head;
 
 	while (tmp) {
-		if (!strcmp(nickname, &tmp->nickname[0]))
+		if (!strcmp(nickname, &tmp->user->name[0]))
 			break;
 
 		tmp = tmp->next;
@@ -79,7 +85,7 @@ struct user_list *find_user_by_id(struct user_list *head, uint16_t addr)
 	struct user_list *tmp = head;
 
 	while (tmp) {
-		if (addr == tmp->addr)
+		if (addr == tmp->user->id)
 			break;
 		tmp = tmp->next;
 	}
@@ -96,7 +102,7 @@ void user_list_del(struct user_list *head, char *nickname)
 
 	tmp = head;
 
-	if (!strcmp(nickname, &head->nickname[0])) {
+	if (!strcmp(nickname, &head->user->name[0])) {
 		tmp = head;
 		head = head->next;
 		free(tmp);
@@ -105,7 +111,7 @@ void user_list_del(struct user_list *head, char *nickname)
 	}
 
 	while (tmp->next) {
-		if (!strcmp(nickname, &tmp->next->nickname[0])) {
+		if (!strcmp(nickname, &tmp->next->user->name[0])) {
 			user = tmp->next;
 			break;
 		}

@@ -6,24 +6,19 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include "users.h"
 
 #define MAXNAMESIZE 50
 #define MAXSIGNATURESIZE 200
 
 struct user_list {
-	bool is_room;
 	bool online;
-	uint16_t addr;
-	char nickname[MAXNAMESIZE];
-	char per_signature[MAXSIGNATURESIZE];
-	uint8_t ip[16];
-	uint16_t port;
+	struct type_user *user;
 	struct user_list *next;
 };
 
 struct user_list *user_list_init_user(
-		char *nickname, char *ip, uint16_t port,
-		uint16_t addr);
+		char *nickname, uint16_t addr);
 void user_list_add(struct user_list **head,
 		struct user_list *new);
 struct user_list *user_list_find(struct user_list *head, char *nickname);

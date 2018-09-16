@@ -1,6 +1,8 @@
 #ifndef _FTTP_UDP_H_
 #define _FTTP_UDP_H_
 #include <stdbool.h>
+#include <stdint.h>
+#include "fttp_default.h"
 
 void fttp_set_socket(int fd);
 int fttp_get_socket(void);
@@ -17,6 +19,6 @@ uint16_t fttp_receive_udp (
 		uint16_t max_pdu, uint32_t timeout);
 int32_t fttp_send_udp(struct fttp_addr *dest, 
 		uint8_t *pdu, uint16_t pdu_len);
-bool fttp_init_udp(void);
+bool fttp_init_udp(char *ifname);
 
 #endif

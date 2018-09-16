@@ -1,4 +1,5 @@
 #include "decode.h"
+#include "apdu.h"
 
 int encode_u16(uint8_t *data, uint16_t value)
 {
@@ -187,5 +188,21 @@ int fttp_decode_enum(uint8_t *data, uint8_t *value)
 	return decode_len;
 }
 
+int fttp_encode_simple_ack(uint8_t *data, uint8_t session_id)
+{
+	if (!data)
+		return 0;
 
+	int len = 0;
+	int data_len = 0;
+
+	len = encode_npdu(data);
+	data_len += len;
+	len += encode_apdu_common(&data[data_len], FTTP_PDU_RSP_SIMPLE,
+			FTTP_SERVICE_TRANS_TEXT);
+	data_len += len;
+	data[data_len++] = session_id;
+
+	return data_len;
+}
 

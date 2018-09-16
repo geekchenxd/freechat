@@ -8,7 +8,6 @@
 #include <signal.h>
 #include <termios.h>
 #include <langinfo.h>
-#include "connection_clent.h"
 #include "c_string.h"
 #include "client.h"
 #include "gui.h"

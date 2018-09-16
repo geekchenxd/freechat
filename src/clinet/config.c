@@ -45,6 +45,7 @@ int parser_user_self(config_t *cfg)
 	config_setting_t *setting;
 	char *nickname = NULL;
 	char *per_signature = NULL;
+	char *birthday = NULL;
 	struct user_list *self = NULL;
 	uint8_t type;
 
@@ -54,12 +55,14 @@ int parser_user_self(config_t *cfg)
 	if(setting != NULL) {
 	  if((config_setting_lookup_int(setting, "user_type", &type)
 		   && config_setting_lookup_string(setting, "nickname", &nickname)
-		   && config_setting_lookup_string(setting, "per_signature", &per_signature))) {
-		  self = user_list_init_user(nickname, "127.0.0.1", 0, 0);
+		   && config_setting_lookup_string(setting, "signature", &per_signature)
+		   && config_setting_lookup_string(setting, "birthday", &birthday))) {
+		  self = user_list_init_user(nickname, 0);
 		  if (!self)
 			  return -1;
-		  self->is_room = type;
-		  memcpy(self->per_signature, per_signature, sizeof(self->per_signature));
+		  self->user->sex = type;
+		  memcpy(self->user->signature, per_signature, sizeof(self->user->signature));
+		  memcpy(self->user->birthday, birthday, sizeof(self->user->birthday));
 
 		  user_list_add(&client.user, self);
 #if 0

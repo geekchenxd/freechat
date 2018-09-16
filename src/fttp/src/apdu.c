@@ -71,8 +71,8 @@ void apdu_handler(struct fttp_addr *src,
 	if ((apdu[0] >= FTTP_PDU_TYPE_MAX) ||
 			(apdu[1] >= FTTP_SERVICE_MAX))
 		return;
-	service = apdu[2];
-	session_id = apdu[3];
+	service = apdu[1];
+	session_id = apdu[2];
 	decode_len += 3;
 
 	switch (apdu[0]) {	/* pdu type */
@@ -94,8 +94,7 @@ void apdu_handler(struct fttp_addr *src,
 						pdu_len - decode_len, src, session_id);
 			 break;
 		case FTTP_SERVICE_USER_REQ:
-			service = apdu[2];
-			decode_len += 2;
+			decode_len -= 1; /*no session id */
 			if (user_req_handle)
 				user_req_handle(&apdu[decode_len],
 						pdu_len - decode_len, src);
@@ -105,13 +104,16 @@ void apdu_handler(struct fttp_addr *src,
 		}
 		break;
 	case FTTP_PDU_RSP_SIMPLE:
+		debug(DEBUG, "the simple ack's session_id is %d\n", session_id);
 		fttp_session_clear(session_id);
 		break;
 	case FTTP_PDU_RSP_COMPLEX:
-		if (apdu[1] == FTTP_SERVICE_USER_RSP)
+		if (service == FTTP_SERVICE_USER_RSP) {
+			decode_len -= 1;   /*no session id*/
 			if (user_rsp_handle)
 				user_rsp_handle(&apdu[decode_len],
 						pdu_len - decode_len, src);
+		}
 		break;
 	case FTTP_PDU_ERROR:
 		fttp_session_clear(session_id);

@@ -3,7 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "users.h"
+#include "debug.h"
+#include "user_id.h"
+#include "text.h"
 
+static uint16_t g_id = 0;
 
 static int fttp_user_rsp_decode(uint8_t *data, uint16_t data_len,
 		struct type_user *user)
@@ -30,9 +34,9 @@ static int fttp_user_rsp_decode(uint8_t *data, uint16_t data_len,
 	if (len <= 0)
 		return 0;
 	decode_len += len;
+	len = fttp_decode_enum(&data[decode_len], (uint8_t *)&user->sex);
 	if (len <= 0)
 		return 0;
-	len = fttp_decode_enum(&data[decode_len], (uint8_t *)&user->sex);
 	decode_len += len;
 
 	return decode_len;
@@ -41,7 +45,16 @@ static int fttp_user_rsp_decode(uint8_t *data, uint16_t data_len,
 void handler_user_req(uint8_t *data, uint16_t data_len,
 		struct fttp_addr *src)
 {
+	debug(INFO, "Recv User request from:%d.%d.%d.%d\n", 
+			src->addr[0], src->addr[1], src->addr[2], src->addr[3]);
 	struct type_user me;
+	if (g_id == 0)
+		g_id = fttp_gen_id();
+	me.id = g_id;
+	memcpy(&me.name[0], "chenxiaodong", sizeof("chenxiaodong"));
+	memcpy(&me.signature[0], "no zuo no die", sizeof("no zuo no die"));
+	memcpy(&me.birthday[0], "1994-05-24", sizeof("1994-05-24"));
+	me.sex = 1;
 	send_user_rsp(src, &me);
 }
 
@@ -70,8 +83,8 @@ void handler_user_rsp(uint8_t *data, uint16_t data_len,
 		return;
 	}
 	/*here to handle the user info*/
-	debug(INFO, "receive a user rsp %u from IP:%s\n",
-			new->id, src->addr);
+	debug(INFO, "receive a user rsp From ID:%u IP:%d.%d.%d.%d\n",
+			new->id, src->addr[0], src->addr[1], src->addr[2], src->addr[3]);
 	debug(INFO, "name:%s\n", new->name);
 	debug(INFO, "signature:%s\n", new->signature);
 	debug(INFO, "birthday:%s\n", new->birthday);
@@ -81,6 +94,9 @@ void handler_user_rsp(uint8_t *data, uint16_t data_len,
 		debug(INFO, "sex:%s\n",
 				(new->sex == FTTP_USER_BOY) ? "boy" : "girl");
 
+	if (!fttp_user_id_add(src, new->id)) {
+		debug(ERROR, "add new user to id cache failed!\n");
+	}
 	/*release resource*/
 	free(new);
 	new = NULL;
@@ -126,3 +142,53 @@ void send_user_rsp(struct fttp_addr *dest,
 
 	fttp_send_udp(&tmp, &npdu[0], pdu_len);
 }
+
+void send_user_req()
+{
+	uint16_t pdu_len = 0;
+	uint16_t len = 0;
+	uint8_t npdu[MAX_PDU];
+	struct fttp_addr dest;
+
+	fttp_get_broadcast_address(&dest);
+	len = encode_npdu(&npdu[pdu_len]);
+	pdu_len += len;
+	len = encode_apdu_common(&npdu[pdu_len], FTTP_PDU_REQ, 
+			FTTP_SERVICE_USER_REQ);
+	pdu_len += len;
+	debug(DEBUG, "Send user request to network! len = %d\n", pdu_len);
+	fttp_send_udp(&dest, &npdu[0], pdu_len);
+}
+
+void *user_id_consult(void *arg)
+{
+	//uint16_t user_id = 0;
+	struct type_user me;
+	uint8_t opt = 0;
+	opt = *((uint8_t *)arg);
+
+	send_user_req();
+	fttp_id_gen_wait(0);
+#if 0
+	user_id = fttp_gen_id();
+	g_id = user_id;
+#endif
+	if(g_id == 0)
+		g_id = fttp_gen_id();
+
+	me.id = g_id;
+	memcpy(&me.name[0], "chenxiaodong", sizeof("chenxiaodong"));
+	memcpy(&me.signature[0], "no zuo no die", sizeof("no zuo no die"));
+	memcpy(&me.birthday[0], "1994-05-24", sizeof("1994-05-24"));
+	me.sex = 1;
+	send_user_rsp(NULL, &me);
+
+	if (opt == 0) {
+		while (1) {
+			fttp_trans_text((uint8_t *)"hello world", sizeof("hello world"), 1);
+			fttp_id_gen_wait(0);
+		}
+	}
+	return NULL;
+}
+

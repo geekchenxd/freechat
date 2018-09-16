@@ -8,16 +8,22 @@ extern char username[LENGHT_USERNAME];
 void* display_func(void *arg) 
 {
 
-    //int i, j;
-    char message_buffer[LENGHT_MESSAGE], message_buffer_2[LENGHT_MESSAGE];
-    char filename[LENGHT_MESSAGE];
-    //char confirm_file[LENGHT_MESSAGE];
-    FILE *fp;
+    //char message_buffer[LENGHT_MESSAGE], message_buffer_2[LENGHT_MESSAGE];
+    //char filename[LENGHT_MESSAGE];
+    //FILE *fp;
 	struct client *p = (struct client *)arg;
+	char *name = "eth0";
 
 	if (!p)
 		return NULL;
 
+#if 0
+	if (!fttp_init(name)) {
+		printf("Display init fttp protocol failed\n");
+		return NULL;
+	}
+
+	fttp_task(p);
     while (state == 0) {
 
         if (recieve_data(LENGHT_MESSAGE, message_buffer) == 0){}
@@ -59,7 +65,6 @@ void* display_func(void *arg)
         strcpy(message_buffer_2, "");
 
     }
-
+#endif
     return NULL;
-
 }

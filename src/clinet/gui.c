@@ -70,7 +70,7 @@ void show_base_info(WINDOW *display)
 	if (!display)
 		return;
 	static bool flag_t = false;
-	static bool flag_h = false;
+//	static bool flag_h = false;
 
 	if (!flag_t) {
 		draw_new(display, "--------------------------------------------------");

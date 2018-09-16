@@ -18,7 +18,7 @@ void remove_current_select(struct client *p)
 		return;
 	}
 
-	wprintw(p->gui.input, "freechat>> Unselect %s\n", current->nickname);
+	wprintw(p->gui.input, "freechat>> Unselect %s\n", current->user->name);
 	current = NULL;
 	usleep(500000);
 	werase(p->gui.single_line);
@@ -62,7 +62,7 @@ void update_current_select(struct client *p)
 	current = tmp;
 	werase(p->gui.single_line);
     wbkgd(p->gui.single_line, COLOR_PAIR(3));
-	wprintw(p->gui.single_line, "freechat>> chating with %s\n", current->nickname);
+	wprintw(p->gui.single_line, "freechat>> chating with %s\n", current->user->name);
 	wrefresh(p->gui.single_line);
 	werase(display);
 }
@@ -155,9 +155,9 @@ void display_online_user(struct client *client)
 		if (idx == 1)
 			notes = "(myself)";
 		else
-			notes = (tmp->is_room == 1) ? "(room)" : "(person)";
+			notes = (tmp->user->sex == 2) ? "(room)" : "(person)";
 		
-		sprintf(&show[0], "#%d. %s%s", idx++, tmp->nickname,notes);
+		sprintf(&show[0], "#%d. %s%s", idx++, tmp->user->name, notes);
 		draw_new(client->gui.display, &show[0]);
 		tmp = tmp->next;
 	}
@@ -243,7 +243,8 @@ void* typing_func(void *arg)
 		}
 
 		sprintf(message_buffer_2, "0%s", message_buffer);
-		if(send_data(message_buffer_2) == 0) {
+		/*if the type(sex) is not root*/
+		if(send_text_udp(message_buffer_2, strlen(message_buffer_2), current->user->id) <= 0) {
 			wprintw(p->gui.input, "%s\n", "freechat>> Send failed");
 			wrefresh(p->gui.input);
 			usleep(500000);

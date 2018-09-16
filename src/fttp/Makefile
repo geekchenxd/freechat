@@ -9,8 +9,10 @@ CROSS	?=
 CC	:= $(CROSS)gcc
 AR	:= $(CROSS)ar
 TARGETDIR:= $(PWD)/bin
-INCLUDE	:= $(PWD)/include
-CFLAGS	:= -Wall -O2 -g -I$(INCLUDE)
+INCLUDE1 := $(PWD)/include
+INCLUDE2 := $(PWD)/../client/include/
+INCLUDES := -I$(INCLUDE1) -I$(INCLUDE2)
+CFLAGS	:= -Wall -O2 -g $(INCLUDES)
 LDFLAGS	:= -lpthread -L$(PWD)/lib -lfttp
 TOPDIR	:= $(PWD)
 

@@ -15,5 +15,6 @@ int fttp_encode_string(uint8_t *data, uint8_t *str, uint32_t len);
 int fttp_decode_string(uint8_t *data, char *str);
 int fttp_encode_enum(uint8_t *data, uint8_t value);
 int fttp_decode_enum(uint8_t *data, uint8_t *value);
+int fttp_encode_simple_ack(uint8_t *data, uint8_t session_id);
 
 #endif
