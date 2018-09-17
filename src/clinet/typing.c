@@ -1,6 +1,7 @@
 #include "typing.h"
-#include "c_string.h"
 #include "search.h"
+#include "gui.h"
+#include "fttp.h"
 
 extern int state;
 extern int g_bottom_line;
@@ -145,7 +146,7 @@ void display_online_user(struct client *client)
 	if (!client)
 		return;
 	int idx = 1;
-	uint8_t show[MAXNAMESIZE + 4] = {0x0};
+	uint8_t show[MAXNAMESIZE + 20] = {0x0};
 	char *notes = NULL;
 
 	struct user_list *tmp = client->user;
@@ -157,8 +158,8 @@ void display_online_user(struct client *client)
 		else
 			notes = (tmp->user->sex == 2) ? "(room)" : "(person)";
 		
-		sprintf(&show[0], "#%d. %s%s", idx++, tmp->user->name, notes);
-		draw_new(client->gui.display, &show[0]);
+		sprintf((char *)&show[0], "#%d. %s%s", idx++, tmp->user->name, notes);
+		draw_new(client->gui.display, (char *)&show[0]);
 		tmp = tmp->next;
 	}
 }
@@ -168,11 +169,6 @@ void* typing_func(void *arg)
 
     char message_buffer[LENGHT_MESSAGE];
     char message_buffer_2[LENGHT_MESSAGE];
-    //char confirm_file[LENGHT_MESSAGE];
-    char filename[LENGHT_MESSAGE];
-    char ch;
-    int buffer_int;
-    FILE *fp;
 	struct client *p = (struct client *)arg;
 
     while (state == 0) {
@@ -242,9 +238,9 @@ void* typing_func(void *arg)
 			break;
 		}
 
-		sprintf(message_buffer_2, "0%s", message_buffer);
-		/*if the type(sex) is not root*/
-		if(send_text_udp(message_buffer_2, strlen(message_buffer_2), current->user->id) <= 0) {
+		/*if the type(sex) is not room*/
+		if(send_text_udp((uint8_t *)message_buffer, strlen(message_buffer), 
+					current->user->id, p->user->user->id) <= 0) {
 			wprintw(p->gui.input, "%s\n", "freechat>> Send failed");
 			wrefresh(p->gui.input);
 			usleep(500000);
@@ -255,6 +251,7 @@ void* typing_func(void *arg)
         strcpy(message_buffer_2, "Me>> ");
         strcat(message_buffer_2, message_buffer);
         draw_new(p->gui.display, message_buffer_2);
+		werase(p->gui.input);
     }
 
     pthread_cancel(*global_display_thread);

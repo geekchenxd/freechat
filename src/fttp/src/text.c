@@ -29,11 +29,19 @@ void handler_trans_text(uint8_t *data, uint16_t data_len,
 	uint16_t decode_len = 0;
 	uint16_t encode_len = 0;
 	int len = 0;
+	uint16_t user_id = 0;
 	
+	/*
+	 * the data[0] is the user's id
+	 */
+	len = fttp_decode_id(&data[0], &user_id);
+	decode_len += len;
+
 	debug(DEBUG, "Recv Text From IP:%d.%d.%d.%d\n", src->addr[0],
 			src->addr[1], src->addr[2], src->addr[3]);
+	debug(DEBUG, "User ID is %d\n", user_id);
 
-	len += fttp_text_decode(data, data_len, &text[0]);
+	len = fttp_text_decode(&data[decode_len], data_len - decode_len, &text[0]);
 	decode_len += len;
 
 	if (decode_len != data_len) {
@@ -52,7 +60,8 @@ void handler_trans_text(uint8_t *data, uint16_t data_len,
 	}
 }
 
-int fttp_trans_text(uint8_t *text, uint16_t text_len, uint8_t user_id)
+int fttp_trans_text(uint8_t *text, uint16_t text_len, 
+		uint8_t user_id, uint16_t my_id)
 {
 	struct fttp_addr dest;
 	uint8_t npdu[MAX_PDU];
@@ -79,6 +88,8 @@ int fttp_trans_text(uint8_t *text, uint16_t text_len, uint8_t user_id)
 	session_id = fttp_free_session();
 	if (session_id) {
 		npdu[pdu_len++] = session_id;
+		len = fttp_encode_id(&npdu[pdu_len], my_id);
+		pdu_len += len;
 
 		len = fttp_encode_string(&npdu[pdu_len], text, text_len);
 		pdu_len += len;

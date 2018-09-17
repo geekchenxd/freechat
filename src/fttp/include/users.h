@@ -14,6 +14,8 @@ struct type_user {
 	enum fttp_user_type sex;
 };
 
+int fttp_user_rsp_decode(uint8_t *data, uint16_t data_len,
+		struct type_user *user);
 void handler_user_req(uint8_t *data, uint16_t data_len,
 		struct fttp_addr *src);
 void handler_user_rsp(uint8_t *data, uint16_t data_len,

@@ -8,7 +8,7 @@
 #include <signal.h>
 #include <termios.h>
 #include <langinfo.h>
-#include "c_string.h"
+#include <ctype.h>
 #include "client.h"
 #include "gui.h"
 #include "search.h"
@@ -20,8 +20,22 @@
 pthread_t *global_typing_thread, *global_display_thread;
 int state = 0, display_height;
 char username[LENGHT_USERNAME] = "";
+char *version = "FreeChat V1.0.1";
 
 struct client client;
+
+static void print_usage(void)
+{
+	printf("%s\n", version);
+	printf("Author:shadchen320@163.com\n");
+	printf("Usage:\n");
+	printf(" freechat [option [arg]]\n");
+	printf(" options:\n"
+			"-h,	show this help info\n"
+			"-c,	specified the configure path\n"
+			"-v,	show the version info\n");
+	return;
+}
 
 void disable_signals(void)
 {
@@ -60,11 +74,11 @@ void process_exit(int signal_num)
 
 int main(int argc , char *argv[]) 
 {
-    //char message_buffer[LENGHT_MESSAGE], c;
-    //char message_buffer_2[LENGHT_MESSAGE];
-    //WINDOW *buffer_window[2];
 	struct sigaction sig;
 	struct client *p;
+	int opt;
+	char *optstring = "hvc:";
+	bool cmd_path = false;
 
 	p = &client;
 
@@ -75,10 +89,36 @@ int main(int argc , char *argv[])
 	sigaction(SIGINT, &sig, NULL);
 
 	terminal_init();
+
+	if (argc >= 2) {
+		while ((opt = getopt(argc, argv, optstring)) != -1) {
+			switch (opt) {
+			case 'h':
+				print_usage();
+				return 0;
+			case 'v':
+				printf("%s\n", version);
+				return 0;
+			case 'c':
+				cmd_path = true;
+				break;
+			default:
+				print_usage();
+				return 0;
+			}
+		}
+	}
 	/* parser configure file */
-	if (config_parser(CONFIGFILEPATH, &client.info)) {
-		fprintf(stderr, "init configure failed\n");
-		exit(1);
+	if (cmd_path) {
+		if (config_parser(argv[2], &client.info)) {
+			fprintf(stderr, "init configure failed\n");
+			exit(1);
+		}
+	} else {
+		if (config_parser(CONFIGFILEPATH, &client.info)) {
+			fprintf(stderr, "init configure failed\n");
+			exit(1);
+		}
 	}
 
 	/* init graphyics */

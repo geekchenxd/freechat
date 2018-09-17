@@ -44,6 +44,7 @@ void apdu_timeout_set(uint32_t timeout)
 
 /*
  * initialeze the message handler functions.
+ * here is the default set.
  */
 void apdu_service_init(void)
 {
@@ -53,6 +54,44 @@ void apdu_service_init(void)
 	user_rsp_handle = handler_user_rsp;
 	//error_handle = hanler_error;
 	//test_handle = handler_test;
+}
+
+/*
+ * set the apdu handlers.
+ */
+void set_trans_file_handle(
+		void (*fun)(uint8_t*,uint16_t, struct fttp_addr*, uint8_t))
+{
+	if (fun)
+		trans_file_handle = fun;
+}
+
+void set_trans_text_handle(
+		void (*fun)(uint8_t*,uint16_t, struct fttp_addr*, uint8_t))
+{
+	if (fun)
+		trans_text_handle = fun;
+}
+
+void set_test_handle(
+		void (*fun)(uint8_t*,uint16_t, struct fttp_addr*, uint8_t))
+{
+	if (fun)
+		test_handle = fun;
+}
+
+void set_user_req_handle(
+		void (*fun)(uint8_t*,uint16_t, struct fttp_addr*))
+{
+	if (fun)
+		user_req_handle = fun;
+}
+
+void set_user_rsp_handle(
+		void (*fun)(uint8_t*,uint16_t, struct fttp_addr*))
+{
+	if (fun)
+		user_rsp_handle = fun;
 }
 
 /*

@@ -24,5 +24,6 @@ void user_list_add(struct user_list **head,
 struct user_list *user_list_find(struct user_list *head, char *nickname);
 void user_list_del(struct user_list *head, char *nickname);
 void user_list_destroy(struct user_list *head);
+struct user_list *find_user_by_id(struct user_list *head, uint16_t addr);
 
 #endif

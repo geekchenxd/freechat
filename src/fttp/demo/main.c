@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 	user_id_init();
 
 	send_user_req();
-#if 0
+#if 1
 	pthread_create(&thid, NULL, user_id_consult, (void *)&opt);
 #endif
 

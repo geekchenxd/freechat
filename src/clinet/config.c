@@ -43,11 +43,12 @@ int main(int argc, char **argv)
 int parser_user_self(config_t *cfg)
 {
 	config_setting_t *setting;
-	char *nickname = NULL;
-	char *per_signature = NULL;
-	char *birthday = NULL;
+	const char *nickname = NULL;
+	const char *per_signature = NULL;
+	const char *birthday = NULL;
+	const char *ifname = NULL;
 	struct user_list *self = NULL;
-	uint8_t type;
+	int type;
 
 	if (!cfg)
 		return -1;
@@ -56,8 +57,13 @@ int parser_user_self(config_t *cfg)
 	  if((config_setting_lookup_int(setting, "user_type", &type)
 		   && config_setting_lookup_string(setting, "nickname", &nickname)
 		   && config_setting_lookup_string(setting, "signature", &per_signature)
+		   && config_setting_lookup_string(setting, "ifname", &ifname)
 		   && config_setting_lookup_string(setting, "birthday", &birthday))) {
-		  self = user_list_init_user(nickname, 0);
+		  client.ifname = malloc(strlen(ifname));
+		  if (client.ifname)
+			  memcpy(client.ifname, ifname, strlen(ifname));
+
+		  self = user_list_init_user((char *)nickname, 0);
 		  if (!self)
 			  return -1;
 		  self->user->sex = type;
@@ -86,7 +92,7 @@ int parser_server_info(config_t *cfg, struct info *info)
 
 	setting = config_lookup(cfg, "server_info");
 	if(setting != NULL) {
-	  char *ip = NULL;
+	  const char *ip = NULL;
 	  int serverport;
 	  int local_port;
 	  int port_local;

@@ -23,6 +23,7 @@ all: $(OBJS)
 		do $(MAKE) -C $$dir all CC=$(CC) AR=$(AR); \
 	done
 
+demo:
 	$(MAKE) -C $(DEMODIR) all CC=$(CC)
 
 clean:

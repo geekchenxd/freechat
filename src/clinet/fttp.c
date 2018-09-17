@@ -11,11 +11,24 @@
 #include "npdu.h"
 #include "user_id.h"
 #include "client.h"
+#include "fttp_handle.h"
 
-static struct client gclient;
-int send_text_udp(uint8_t *text, uint16_t text_len, uint16_t user_id)
+/*
+ * the global is already externed in client.h
+ */
+
+
+static void freechat_set_fttp_service_handle()
 {
-	return fttp_trans_text(text, text_len, user_id);
+	set_trans_text_handle(freechat_handler_trans_text);
+	set_user_req_handle(freechat_handler_user_req);
+	set_user_rsp_handle(freechat_handler_user_rsp);
+}
+
+int send_text_udp(uint8_t *text, uint16_t text_len, 
+		uint16_t user_id, uint16_t my_id)
+{
+	return fttp_trans_text(text, text_len, user_id, my_id);
 }
 
 void fttp_task(struct client *p)
@@ -23,13 +36,26 @@ void fttp_task(struct client *p)
 	struct fttp_addr src;
 	uint16_t pdu_len = 0;
 	uint8_t pdu[MAX_PDU];
+	time_t elapsed_seconds = 0;
+	time_t last_seconds = 0;
+	time_t current_seconds = 0;
+	uint32_t timeout = 0;
 	
+	last_seconds = time(NULL);
 	while (1) {
+		current_seconds = time(NULL);
 		pdu_len = fttp_receive_udp(&src, &pdu[0], MAX_PDU, 3);
 		if (pdu_len > 0) {
-			debug(DEBUG, "Message received, now to handler it! len = %d\n",
-					pdu_len);
 			npdu_handler(&src, &pdu[0], pdu_len);
+		}
+		elapsed_seconds = current_seconds - last_seconds;
+		if (elapsed_seconds) {
+			last_seconds = time(NULL);
+		}
+		timeout += elapsed_seconds;
+		if (timeout >= 10) {
+			send_user_req();
+			timeout = 0;
 		}
 
 		usleep(1000);
@@ -39,11 +65,11 @@ void fttp_task(struct client *p)
 
 bool fttp_init(char *ifname)
 {
-
-	apdu_service_init();
+	//apdu_service_init();
+	freechat_set_fttp_service_handle();
 	fttp_set_port(htons(0x20E8));
 	if (!fttp_init_udp(ifname)) {
-		debug(ERROR, "Init udp failed!\n");
+		printf("Init udp failed!\n");
 		exit(1);
 	}
 	user_id_init();

@@ -9,7 +9,7 @@
 
 static uint16_t g_id = 0;
 
-static int fttp_user_rsp_decode(uint8_t *data, uint16_t data_len,
+int fttp_user_rsp_decode(uint8_t *data, uint16_t data_len,
 		struct type_user *user)
 {
 	int len = 0;
@@ -185,7 +185,7 @@ void *user_id_consult(void *arg)
 
 	if (opt == 0) {
 		while (1) {
-			fttp_trans_text((uint8_t *)"hello world", sizeof("hello world"), 1);
+			fttp_trans_text((uint8_t *)"hello world", sizeof("hello world"), 1, me.id);
 			fttp_id_gen_wait(0);
 		}
 	}

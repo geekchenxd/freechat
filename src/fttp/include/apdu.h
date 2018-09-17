@@ -20,6 +20,16 @@ void apdu_handler(struct fttp_addr *src,
 		uint8_t *apdu, uint16_t pdu_len);
 uint16_t encode_apdu_common(uint8_t *apdu, enum pdu_type pdu_type,
 		enum fttp_service service);
+void set_trans_file_handle(
+		void (*fun)(uint8_t*,uint16_t, struct fttp_addr*, uint8_t));
+void set_trans_text_handle(
+		void (*fun)(uint8_t*,uint16_t, struct fttp_addr*, uint8_t));
+void set_test_handle(
+		void (*fun)(uint8_t*,uint16_t, struct fttp_addr*, uint8_t));
+void set_user_req_handle(
+		void (*fun)(uint8_t*,uint16_t, struct fttp_addr*));
+void set_user_rsp_handle(
+		void (*fun)(uint8_t*,uint16_t, struct fttp_addr*));
 
 
 

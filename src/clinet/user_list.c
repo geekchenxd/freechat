@@ -64,9 +64,14 @@ struct user_list *user_list_find(struct user_list *head, char *nickname)
 	
 	tmp = head;
 
+	if (strlen(nickname) > MAXNAMESIZE)
+		return NULL;
+
 	while (tmp) {
-		if (!strcmp(nickname, &tmp->user->name[0]))
-			break;
+		if (tmp->user->name) {
+			if (!strncmp(nickname, &tmp->user->name[0], strlen(nickname)))
+				break;
+		}
 
 		tmp = tmp->next;
 	}

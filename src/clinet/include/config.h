@@ -6,6 +6,8 @@
 #include <libconfig.h>
 #include "client.h"
 
+extern char ethname[20];
+
 int config_parser(const char *path, struct info *info);
 
 #endif
