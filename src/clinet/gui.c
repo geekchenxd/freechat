@@ -1,6 +1,19 @@
 #include "client.h"
 #include <locale.h>
 
+/*
+ * the mini lines is the sum of top line, fix lines,
+ * hide line, display lines, split line, typing lines
+ * and a bottom line
+ */
+#define MINILINES 1+2+1+4+1+4+1
+
+/*
+ * the mini columns is the the length the longest fix 
+ * info is;
+ */
+#define MINICOLUMNS 72
+
 int parent_x, parent_y;
 int typing_size;
 
@@ -22,6 +35,13 @@ int init_gui(uint8_t size)
 
     /* get our maximum window dimensions */
     getmaxyx(stdscr, parent_y, parent_x);
+	if ((parent_y < MINILINES) || (parent_x < MINICOLUMNS)) {
+		endwin();
+		printf("Your screen is too small to run freechat!!!\n");
+		printf("It needs at lease %d lines and and %d columns!\n",
+				MINILINES, MINICOLUMNS);
+		return -1;
+	}
 
     /* draw windows */
     WINDOW *top_line = newwin(1, parent_x, 0, 0);
@@ -69,7 +89,6 @@ void show_base_info(WINDOW *display)
 	if (!display)
 		return;
 	static bool flag_t = false;
-//	static bool flag_h = false;
 
 	if (!flag_t) {
 		draw_new(display, "--------------------------------------------------");
