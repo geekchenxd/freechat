@@ -100,6 +100,8 @@ int fttp_trans_text(uint8_t *text, uint16_t text_len,
 			fttp_session_clear(session_id);
 			return 0;
 		}
+	} else {
+		return session_id;
 	}
 
 	return (int)fttp_send_udp(&dest, &npdu[0], pdu_len);

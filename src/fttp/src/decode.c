@@ -198,7 +198,7 @@ int fttp_encode_simple_ack(uint8_t *data, uint8_t session_id)
 
 	len = encode_npdu(data);
 	data_len += len;
-	len += encode_apdu_common(&data[data_len], FTTP_PDU_RSP_SIMPLE,
+	len = encode_apdu_common(&data[data_len], FTTP_PDU_RSP_SIMPLE,
 			FTTP_SERVICE_TRANS_TEXT);
 	data_len += len;
 	data[data_len++] = session_id;

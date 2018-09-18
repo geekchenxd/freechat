@@ -134,6 +134,8 @@ void fttp_session_process(uint16_t milliseconds)
 				session[i].timer = apdu_timeout();
 				session[i].retry++;
 				/*send pdu*/
+				fttp_send_udp(&session[i].dest, 
+						&session[i].pdu[0],session[i].pdu_len);
 			} else {
 				/*handle and clear session id*/
 				

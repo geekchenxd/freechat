@@ -50,6 +50,7 @@ void fttp_task(struct client *p)
 		}
 		elapsed_seconds = current_seconds - last_seconds;
 		if (elapsed_seconds) {
+			fttp_session_process(elapsed_seconds * 1000);
 			last_seconds = time(NULL);
 		}
 		timeout += elapsed_seconds;
