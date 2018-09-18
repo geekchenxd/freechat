@@ -4,9 +4,6 @@
 #include "config.h"
 
 
-extern int state;
-extern char username[LENGHT_USERNAME];
-
 void* display_func(void *arg) 
 {
 	struct client *p = (struct client *)arg;

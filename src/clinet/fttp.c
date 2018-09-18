@@ -14,7 +14,7 @@
 #include "fttp_handle.h"
 
 /*
- * the global is already externed in client.h
+ * the global client is already externed in client.h
  */
 
 
@@ -65,17 +65,20 @@ void fttp_task(struct client *p)
 
 bool fttp_init(char *ifname)
 {
-	//apdu_service_init();
+	/*apdu_service_init();*/
 	freechat_set_fttp_service_handle();
 	fttp_set_port(htons(0x20E8));
+
 	if (!fttp_init_udp(ifname)) {
 		printf("Init udp failed!\n");
 		exit(1);
 	}
+
 	user_id_init();
 	send_user_req();
 	fttp_id_gen_wait(1);
 	send_user_req();
+
 	return true;
 }
 

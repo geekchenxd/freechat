@@ -33,6 +33,7 @@ int init_gui(uint8_t size)
     WINDOW *split_line = newwin(1, parent_x - 2, parent_y - size - 3, 1);
 
     display_height = parent_y - size - 3; /*top and bottom line and split line*/
+	display_height -= 3; /*fix info area and hide line*/
 
     wbkgd(split_line, COLOR_PAIR(3));
     wrefresh(split_line);
@@ -47,8 +48,6 @@ int init_gui(uint8_t size)
 
     initial_buffer_screen(display_height, size);
 
-    /*wbkgd(display, COLOR_PAIR(1));*/
-    /*wrefresh(display);*/
 	/*show fix help information*/
 	char *fix1 = "^G Get help    ^E Quit     ^Y Select    ^O Unselect    ^T Search key";
 	char *fix2 = "^F Send File   ^W Latest   ^R Up page   ^D Down page   ^A Show contact";
@@ -81,7 +80,7 @@ void show_base_info(WINDOW *display)
 
     draw_new(display, "**************************************************");
 	draw_new(display, " ### FREECHAT HELP ###");
-	draw_new(display, "^G Get this help info.");
+	draw_new(display, "^G Get detail help info.");
 	draw_new(display, "^E To exit from this program.");
 	draw_new(display, "^Y Select a contact to chat with.");
 	draw_new(display, "^O Get out from the contact current chating with.");

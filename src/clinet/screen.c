@@ -86,7 +86,7 @@ void add_line(char *string){
 
 }
 
-void draw_new(WINDOW *display, char *string){
+void draw_new(WINDOW *display, char *string) {
 
 	int i;
 
@@ -115,7 +115,6 @@ void draw_new(WINDOW *display, char *string){
 	//Print string on screen and refresh screen
 	wprintw(display, "%s\n", string);
 	wrefresh(display);
-
 }
 
 void draw_old_line(WINDOW *display, int option, int line_user_want_scroll){

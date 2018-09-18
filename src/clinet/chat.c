@@ -19,7 +19,6 @@
 
 pthread_t *global_typing_thread, *global_display_thread;
 int state = 0, display_height;
-char username[LENGHT_USERNAME] = "";
 char *version = "FreeChat V1.0.1";
 
 struct client client;
@@ -132,7 +131,7 @@ int main(int argc , char *argv[])
 	p->gui.single_line = get_single_line();
 	show_base_info(p->gui.display);
 
-    //prepare to pthread_create with WINDOW *buffer_window[2];
+	/* create two thread one for typing another for msg reciver and handle*/
     pthread_t typing_thread, display_thread;
     global_typing_thread = &typing_thread;
     global_display_thread = &display_thread;
