@@ -12,6 +12,7 @@
 #include "user_id.h"
 #include "client.h"
 #include "fttp_handle.h"
+#include "session.h"
 
 /*
  * the global client is already externed in client.h
@@ -68,6 +69,7 @@ bool fttp_init(char *ifname)
 {
 	/*apdu_service_init();*/
 	freechat_set_fttp_service_handle();
+	fttp_set_session_handle(freechat_handle_session_failed);
 	fttp_set_port(htons(0x20E8));
 
 	if (!fttp_init_udp(ifname)) {

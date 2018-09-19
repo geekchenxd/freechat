@@ -188,7 +188,8 @@ int fttp_decode_enum(uint8_t *data, uint8_t *value)
 	return decode_len;
 }
 
-int fttp_encode_simple_ack(uint8_t *data, uint8_t session_id)
+int fttp_encode_simple_ack(uint8_t *data, 
+		enum fttp_service service, uint8_t session_id)
 {
 	if (!data)
 		return 0;
@@ -198,8 +199,7 @@ int fttp_encode_simple_ack(uint8_t *data, uint8_t session_id)
 
 	len = encode_npdu(data);
 	data_len += len;
-	len = encode_apdu_common(&data[data_len], FTTP_PDU_RSP_SIMPLE,
-			FTTP_SERVICE_TRANS_TEXT);
+	len = encode_apdu_common(&data[data_len], FTTP_PDU_RSP_SIMPLE, service);
 	data_len += len;
 	data[data_len++] = session_id;
 

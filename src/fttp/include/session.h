@@ -19,9 +19,10 @@ struct fttp_session {
 uint8_t fttp_free_session(void);
 void fttp_session_set(uint8_t id, struct fttp_addr *dest,
 		uint8_t *pdu, uint16_t pdu_len);
-bool fttp_session_get_pdu(uint8_t id, struct fttp_addr *dest,
+bool fttp_session_get(uint8_t id, struct fttp_addr *dest,
 		uint8_t *pdu, uint16_t *pdu_len);
 void fttp_session_process(uint16_t milliseconds);
 void fttp_session_clear(uint8_t id);
+void fttp_set_session_handle(void (*fun)(uint8_t));
 
 #endif

@@ -30,6 +30,21 @@ bool fttp_addr_same(struct fttp_addr *src, struct fttp_addr *dest)
 	return true;
 }
 
+uint16_t fttp_get_user_id(struct fttp_addr *addr)
+{
+	struct user_id_cache *idtable;
+
+	idtable = id_cache;
+	while (idtable <= &id_cache[MAX_ID - 1]) {
+		if (((idtable->flags & ADDR_IN_USE) != 0)) {
+			if (fttp_addr_same(addr, &idtable->addr))
+				return idtable->user_id;
+		}
+		idtable++;
+	}
+	return 0;
+}
+
 void user_id_init(void)
 {
 	struct user_id_cache *id = 0;

@@ -8,6 +8,11 @@ extern int g_bottom_line;
 extern pthread_t *global_display_thread;
 static struct user_list *current;
 
+bool user_is_current(struct user_list *user)
+{
+	return (user == current);
+}
+
 void remove_current_select(struct client *p)
 {
 	if (!current) {

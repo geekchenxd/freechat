@@ -177,7 +177,7 @@ void *user_id_consult(void *arg)
 		g_id = fttp_gen_id();
 
 	me.id = g_id;
-	memcpy(&me.name[0], "chenxiaodong", sizeof("chenxiaodong"));
+	memcpy(&me.name[0], "test", sizeof("test"));
 	memcpy(&me.signature[0], "no zuo no die", sizeof("no zuo no die"));
 	memcpy(&me.birthday[0], "1994-05-24", sizeof("1994-05-24"));
 	me.sex = 1;

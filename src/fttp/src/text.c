@@ -53,7 +53,7 @@ void handler_trans_text(uint8_t *data, uint16_t data_len,
 	debug(INFO, "[%s]\n", text); 
 
 	/*send a simple ack*/
-	len = fttp_encode_simple_ack(&text[0], session_id);
+	len = fttp_encode_simple_ack(&text[0], FTTP_SERVICE_TRANS_TEXT, session_id);
 	encode_len += len;
 	if (encode_len > 0) {
 		fttp_send_udp(src, &text[0], encode_len);

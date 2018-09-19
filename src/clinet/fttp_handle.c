@@ -6,6 +6,8 @@
 #include "fttp_udp.h"
 #include "display.h"
 #include "user_list.h"
+#include "session.h"
+#include "typing.h"
 
 /*
  * the global is already externed in client.h
@@ -122,9 +124,101 @@ void freechat_handler_trans_text(uint8_t *data, uint16_t data_len,
 	msg_display(user_id, &text[0], len - 3);
 
 	/*send a simple ack*/
-	len = fttp_encode_simple_ack(&text[0], session_id);
+	len = fttp_encode_simple_ack(&text[0], FTTP_SERVICE_TRANS_TEXT, session_id);
 	encode_len += len;
 	if (encode_len > 0) {
 		fttp_send_udp(src, &text[0], encode_len);
+	}
+}
+
+void freechat_remove_user(uint16_t id)
+{
+	struct user_list *user = NULL;
+
+	fttp_user_id_del(id);
+	user = find_user_by_id(client.user, id);
+	if (!user)
+		return;
+
+	if (user_is_current(user))
+		remove_current_select(&client);
+
+	user_list_del(client.user, &user->user->name[0]);
+}
+
+/*
+ * handle the currernt failed event.
+ * send text failed or send file failed
+ * or link test failed.
+ * if current failed is not a link event, 
+ * send link test to the user.
+ */
+void freechat_handle_session_failed(uint8_t id)
+{
+	struct fttp_addr dest;
+	struct fttp_npdu npdu_data;
+	enum fttp_service service;
+	uint8_t session_id;
+	uint16_t pdu_len = 0;
+	uint8_t text[FTTP_MAX_TEXT_SIZE] = {0x0};
+	uint8_t pdu[MAX_PDU] = {0x0};
+	uint16_t decode_len = 0;
+	uint16_t user_id;
+	uint16_t dest_id = 0;
+	int len = 0;
+
+	if (!fttp_session_get(id, &dest, &pdu[0], &pdu_len))
+		return;
+
+	/*
+	 * decode npdu data
+	 */
+	len = npdu_decode(&pdu[decode_len], &npdu_data);
+	decode_len += len;
+
+	/*
+	 * handle apdu
+	 */
+	/*pdu_type = apdu[decode_len + 0];*/
+	service = pdu[decode_len + 1];
+	session_id = pdu[decode_len + 2];
+	decode_len += 3;
+
+	if (session_id != id) {
+		/*decode error*/
+		return;
+	}
+
+	switch (service) {
+	case FTTP_SERVICE_TRANS_TEXT:
+		len = fttp_decode_id(&pdu[decode_len], &user_id);
+		decode_len += len;
+		len = fttp_text_decode(&pdu[decode_len], pdu_len - decode_len, &text[0]);
+		decode_len += len;
+		if (decode_len != pdu_len) {
+			/*decode error*/
+			return;
+		}
+		dest_id = fttp_get_user_id(&dest);
+		freechat_mark_message((char *)&text[0], dest_id);
+		/*
+		 * here send a link test to the user
+		 */
+		fttp_link_test(dest_id);
+		break;
+	case FTTP_SERVICE_TRANS_FILE:
+		/*
+		 * mark file send failed.
+		 */
+		break;
+	case FTTP_SERVICE_LINK_TEST:
+		dest_id = fttp_get_user_id(&dest);
+		freechat_remove_user(dest_id);
+		/*
+		 * remove the user from current user list.
+		 */
+		break;
+	default:
+		break;
 	}
 }

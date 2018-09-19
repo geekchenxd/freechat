@@ -7,6 +7,7 @@
 
 static int session_id = 1;
 static struct fttp_session session[MAX_FTTP_SESSION];
+static void (*fttp_session_failed_handle)(uint8_t);
 
 /*
  * Get the index of session described by id, id is zero
@@ -137,9 +138,12 @@ void fttp_session_process(uint16_t milliseconds)
 				fttp_send_udp(&session[i].dest, 
 						&session[i].pdu[0],session[i].pdu_len);
 			} else {
-				/*handle and clear session id*/
-				
+				/*handle failed and clear session id*/
+				if (fttp_session_failed_handle) {
+					fttp_session_failed_handle(session[i].session_id);
+				}
 				session[i].waiting = false;
+				session[i].session_id = 0;
 			}
 		}
 	}
@@ -153,5 +157,11 @@ void fttp_session_clear(uint8_t id)
 		session[idx].waiting = false;
 		session[idx].session_id = 0;
 	}
+}
+
+void fttp_set_session_handle(void (*fun)(uint8_t))
+{
+	if (fun)
+		fttp_session_failed_handle = fun;
 }
 

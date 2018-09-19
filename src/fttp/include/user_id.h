@@ -22,5 +22,6 @@ uint16_t fttp_gen_id(void);
 bool fttp_user_id_del(uint16_t id);
 bool fttp_addr_same(struct fttp_addr *src, struct fttp_addr *dest);
 void fttp_id_gen_wait(uint32_t seconds);
+uint16_t fttp_get_user_id(struct fttp_addr *addr);
 
 #endif
