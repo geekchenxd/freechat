@@ -25,13 +25,13 @@ void remove_current_select(struct client *p)
 	}
 
 	wprintw(p->gui.input, "freechat>> Unselect %s\n", current->user->name);
+	wrefresh(p->gui.input);
 	current = NULL;
 	usleep(500000);
 	werase(p->gui.single_line);
     wbkgd(p->gui.single_line, COLOR_PAIR(4));
 	wrefresh(p->gui.single_line);
 	werase(p->gui.input);
-	wrefresh(p->gui.input);
 }
 
 void update_current_select(struct client *p)
@@ -58,7 +58,9 @@ void update_current_select(struct client *p)
 
 	tmp = user_list_find(client.user, name);
 	if (!tmp) {
-		wprintw(display, "the user '%s' is not in current list,^A to show all list\n");
+		wprintw(display, 
+				"the user '%s' is not in current list,^A to show all list\n",
+				name);
 		wrefresh(display);
 		usleep(500000);
 		werase(display);
@@ -116,7 +118,7 @@ void send_file(struct client *p)
 
 void search_text(struct client *p)
 {
-	char name[MAXNAMESIZE] = {0x0};
+	char text[MAXNAMESIZE] = {0x0};
 	WINDOW *display = NULL;
 
 	if (!p)
@@ -126,16 +128,21 @@ void search_text(struct client *p)
 	wprintw(display, "freechat>>(search text:)");
 	wrefresh(display);
 
-	wscanw(display, " %[^\n]s", name);
-	while (strlen(name) > 200) {
+	wscanw(display, " %[^\n]s", text);
+	while (strlen(text) > 200) {
 		werase(display);
 		wprintw(display, "freechat>> Message cannot more than 200 characters.\n");
 		wprintw(display, "freechat>> (search text:)");
 		wrefresh(display);
-		wscanw(display, " %[^\n]s", name);
+		wscanw(display, " %[^\n]s", text);
 	}
 
-	if (search(name, p->gui.display)) {
+	if (strlen(text) == 0) {
+		werase(display);
+		return;
+	}
+
+	if (search(text, p->gui.display)) {
 		wprintw(display, "the text '%s' you are searching not fount in current reccord.\n");
 		wrefresh(display);
 		usleep(500000);
@@ -171,27 +178,20 @@ void display_online_user(struct client *client)
 
 void* typing_func(void *arg) 
 {
-
+	int cmd = 0;
+	struct client *p = (struct client *)arg;
     char message_buffer[LENGHT_MESSAGE];
     char message_buffer_2[LENGHT_MESSAGE];
-	struct client *p = (struct client *)arg;
 
-    while (state == 0) {
-
+	while (state == 0) {
         //Reset string for get new message
         strcpy(message_buffer, "");
         strcpy(message_buffer_2, "");
 
-        wscanw(p->gui.input, " %[^\n]s", message_buffer);
-        while (strlen(message_buffer) > 200) {
-            werase(p->gui.input);
-            draw_new(p->gui.input, "freechat>> Message cannot more than 200 characters.");
-			sleep(1);
-            werase(p->gui.input);
-            wscanw(p->gui.input, " %[^\n]s", message_buffer);
-        }
-
-		switch (message_buffer[0]) {
+		cmd = wgetch(p->gui.input);
+		if (cmd == '\n')
+			continue;
+		switch (cmd) {
 		case 1:		/*^A show all online contact*/
 			display_online_user(p);
 			werase(p->gui.input);
@@ -233,6 +233,17 @@ void* typing_func(void *arg)
 			update_current_select(p);
 			continue;
 		default:
+			message_buffer[0] = (char)cmd;
+			wscanw(p->gui.input, " %[^\n]s", &message_buffer[1]);
+			if (strlen(message_buffer) > 200) {
+				werase(p->gui.input);
+				draw_new(p->gui.input, "freechat>> Message cannot more than 200 characters.");
+				wrefresh(p->gui.input);
+				usleep(500000);
+				werase(p->gui.input);
+				continue;
+			}
+
 			if (!current) {
 				wprintw(p->gui.input, "%s\n", "freechat>> select a user to send or input correct cmd");
 				wrefresh(p->gui.input);
@@ -257,9 +268,9 @@ void* typing_func(void *arg)
         strcat(message_buffer_2, message_buffer);
         draw_new(p->gui.display, message_buffer_2);
 		werase(p->gui.input);
-    }
+	}
 
     pthread_cancel(*global_display_thread);
-    return 0;
+	return NULL;
 }
 

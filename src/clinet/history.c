@@ -1,4 +1,4 @@
-#include "screen.h"
+#include "history.h"
 
 struct node *current, *screen, *root;
 int line_amount = 0, g_bottom_line = 0;
@@ -136,7 +136,7 @@ void draw_old_line(WINDOW *display, int option, int line_user_want_scroll){
 		if (option == 1) 
 			desc_line = g_bottom_line - display_height;
 		else	/* 2 */
-		   	desc_line = g_bottom_line + 1;
+		   	desc_line = g_bottom_line + 0;
 
 		//Initial current pointer for search in linked list
 		current = root;

@@ -1,5 +1,5 @@
-#ifndef _SCREEN_H_
-#define _SCREEN_H_
+#ifndef _HISTORY_H_
+#define _HISTORY_H_
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>

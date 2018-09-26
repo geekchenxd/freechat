@@ -57,6 +57,7 @@ void user_list_add(struct user_list **head, struct user_list *new)
 
 struct user_list *user_list_find(struct user_list *head, char *nickname)
 {
+	int len = 0;
 	if (!head ||!nickname)
 		return NULL;
 
@@ -69,8 +70,12 @@ struct user_list *user_list_find(struct user_list *head, char *nickname)
 
 	while (tmp) {
 		if (tmp->user->name) {
-			if (!strncmp(nickname, &tmp->user->name[0], strlen(nickname)))
+			len = (strlen(nickname) > strlen(tmp->user->name)) ? 
+				strlen(nickname) : strlen(tmp->user->name);
+
+			if (!strncmp(nickname, &tmp->user->name[0], len)) {
 				break;
+			}
 		}
 
 		tmp = tmp->next;

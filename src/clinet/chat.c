@@ -78,6 +78,7 @@ int main(int argc , char *argv[])
 	int opt;
 	char *optstring = "hvc:";
 	bool cmd_path = false;
+    pthread_t typing_thread, display_thread;
 
 	p = &client;
 
@@ -110,11 +111,13 @@ int main(int argc , char *argv[])
 	/* parser configure file */
 	if (cmd_path) {
 		if (config_parser(argv[2], &client.info)) {
+			print_usage();
 			fprintf(stderr, "init configure failed\n");
 			exit(1);
 		}
 	} else {
 		if (config_parser(CONFIGFILEPATH, &client.info)) {
+			print_usage();
 			fprintf(stderr, "init configure failed\n");
 			exit(1);
 		}
@@ -132,7 +135,6 @@ int main(int argc , char *argv[])
 	show_base_info(p->gui.display);
 
 	/* create two thread one for typing another for msg reciver and handle*/
-    pthread_t typing_thread, display_thread;
     global_typing_thread = &typing_thread;
     global_display_thread = &display_thread;
     pthread_create(&typing_thread, NULL, (void *)typing_func, (void *)p);
