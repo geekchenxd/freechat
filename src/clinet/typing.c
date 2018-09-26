@@ -32,6 +32,7 @@ void remove_current_select(struct client *p)
     wbkgd(p->gui.single_line, COLOR_PAIR(4));
 	wrefresh(p->gui.single_line);
 	werase(p->gui.input);
+	wrefresh(p->gui.input);
 }
 
 void update_current_select(struct client *p)
