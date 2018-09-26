@@ -88,13 +88,17 @@ void show_base_info(WINDOW *display)
 {
 	if (!display)
 		return;
+	static bool flag_h = false;
 	static bool flag_t = false;
 
-	if (!flag_t) {
+	/*
+	 * display this head info only on initialization
+	 */
+	if (!flag_h) {
 		draw_new(display, "--------------------------------------------------");
 		draw_new(display, "             Welcome to Free Chat!            ");
 		draw_new(display, "--------------------------------------------------\n");
-		flag_t = true;
+		flag_h = true;
 	}
 
     draw_new(display, "**************************************************");
@@ -109,7 +113,27 @@ void show_base_info(WINDOW *display)
 	draw_new(display, "^R Scroll screen up a page.");
 	draw_new(display, "^D Scroll screen down a page.");
 	draw_new(display, "^A To show all friends on line.");
-    draw_new(display, "**************************************************\n");
+	if (!flag_t) {
+		draw_new(display, "**************************************************\n");
+	}
+
+	/*
+	 * this help info not display during initialization
+	 */
+	if (flag_t) {
+		draw_new(display, "Advanced Options:");
+		draw_new(display, ":server    Connect to server.");
+		draw_new(display, ":setserver Set default server info.");
+		draw_new(display, ":info      Display user details.");
+		draw_new(display, ":edit      Edit my info.");
+		draw_new(display, ":refresh   Refresh user list.");
+		draw_new(display, ":log       Save chat log.");
+		draw_new(display, ":disable   Disable users' message.");
+		draw_new(display, ":list      Display disabled user list.");
+		draw_new(display, ":enable    Enable users' message.");
+		draw_new(display, "**************************************************\n");
+	}
+	flag_t = true;
 }
 
 WINDOW *get_display()

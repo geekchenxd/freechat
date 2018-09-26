@@ -52,8 +52,8 @@ void apdu_service_init(void)
 	trans_text_handle = handler_trans_text;
 	user_req_handle = handler_user_req;
 	user_rsp_handle = handler_user_rsp;
+	test_handle = handler_link_test;
 	//error_handle = hanler_error;
-	//test_handle = handler_test;
 }
 
 /*

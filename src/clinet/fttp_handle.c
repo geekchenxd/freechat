@@ -83,6 +83,7 @@ void freechat_handler_user_rsp(uint8_t *data, uint16_t data_len,
 		return;
 	}
 	user_node->online = true;
+	user_node->enable = true;
 	user_node->user = new;
 	user_node->next = NULL;
 	user_list_add(&client.user, user_node);
@@ -92,6 +93,7 @@ void freechat_handler_user_rsp(uint8_t *data, uint16_t data_len,
 void freechat_handler_trans_text(uint8_t *data, uint16_t data_len,
 		struct fttp_addr *src, uint8_t session_id)
 {
+	struct user_list *user = NULL;
 	uint8_t text[FTTP_MAX_TEXT_SIZE];
 	uint16_t decode_len = 0;
 	uint16_t encode_len = 0;
@@ -119,8 +121,19 @@ void freechat_handler_trans_text(uint8_t *data, uint16_t data_len,
 		perror("");
 		return;
 	}
-	/*handle the text*/
-	/*the text length:len - 3(tag and len)*/
+
+	/*
+	 * if the user's message is disabled, don't display the message
+	 * and send ack
+	 */
+	user = find_user_by_id(client.user, user_id);
+	if (!user || !user->enable)
+		return;
+
+	/*
+	 *handle the text
+	 *the text length:len - 3(tag and len)
+	 */
 	msg_display(user_id, &text[0], len - 3);
 
 	/*send a simple ack*/

@@ -21,6 +21,7 @@
 
 static void freechat_set_fttp_service_handle()
 {
+	apdu_service_init();
 	set_trans_text_handle(freechat_handler_trans_text);
 	set_user_req_handle(freechat_handler_user_req);
 	set_user_rsp_handle(freechat_handler_user_rsp);

@@ -13,6 +13,7 @@
 
 struct user_list {
 	bool online;
+	bool enable;
 	struct type_user *user;
 	struct user_list *next;
 };

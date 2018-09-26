@@ -36,6 +36,7 @@ struct user_list *user_list_init_user(
 	user = user_list_create_user();
 	if (user) {
 		user->online = true;
+		user->enable = true;
 		user->user->id = addr;
 		memcpy(&user->user->name[0], nickname, sizeof(user->user->name));
 		user->next = NULL;
