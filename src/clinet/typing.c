@@ -176,7 +176,7 @@ void display_online_user(struct client *client, bool flag)
 		else
 			notes = (tmp->user->sex == 2) ? "(room)" : "(person)";
 		if (flag) {
-			sprintf((char *)&show[0], "#%d. %s%s", idx++, tmp->user->name, notes);
+			sprintf((char *)&show[0], "#%d. %s%s", idx, tmp->user->name, notes);
 			draw_new(client->gui.display, (char *)&show[0]);
 			memset(&show[0], 0x0, sizeof(show));
 		} else {
@@ -187,6 +187,7 @@ void display_online_user(struct client *client, bool flag)
 			}
 		}
 		tmp = tmp->next;
+		idx++;
 	}
 }
 
