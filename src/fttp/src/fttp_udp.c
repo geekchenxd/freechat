@@ -227,7 +227,6 @@ int32_t fttp_send_udp(struct fttp_addr *dest,
     buf[0] = FTTP_SIGNATURE;
 	len += 1;
 				
-	memcpy(&buf[1], pdu, pdu_len);
 	bytes_sent = sendto(fttp_socket, (char *)buf, len, 0,
 			(struct sockaddr *)&fttp_dest, sizeof(struct sockaddr));
 	if (bytes_sent > 0) {
