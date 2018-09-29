@@ -17,7 +17,7 @@ INCLUDE2 := $(FTTP_INC)
 INCLUDES = -I$(INCLUDE1) -I$(INCLUDE2)
 
 CFLAGS	:= -Wall -O2 -g $(INCLUDES)
-LDFLAGS	:= -lpthread -lncursesw -lconfig -L$(FTTP_LIB) -lfttp
+LDFLAGS	:= -lpthread -lncursesw -lconfig -lssl -lcrypto -L$(FTTP_LIB) -lfttp
 TOPDIR	:= $(PWD)
 
 export CFLAGS TOPDIR CC AR

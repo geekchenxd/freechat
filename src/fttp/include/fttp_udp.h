@@ -15,7 +15,7 @@ uint32_t fttp_get_broadcast_addr(void);
 void fttp_get_my_address(struct fttp_addr *my_address);
 void fttp_get_broadcast_address(struct fttp_addr *addr);
 uint16_t fttp_receive_udp (
-		struct fttp_addr *src, uint8_t *pdu,
+		struct fttp_addr *src, uint8_t *lpdu,
 		uint16_t max_pdu, uint32_t timeout);
 int32_t fttp_send_udp(struct fttp_addr *dest, 
 		uint8_t *pdu, uint16_t pdu_len);

@@ -13,7 +13,7 @@ INCLUDE1 := $(PWD)/include
 INCLUDE2 := $(PWD)/../client/include/
 INCLUDES := -I$(INCLUDE1) -I$(INCLUDE2)
 CFLAGS	:= -Wall -O2 -g $(INCLUDES)
-LDFLAGS	:= -lpthread -L$(PWD)/lib -lfttp
+LDFLAGS	:= -lpthread -lssl -lcrypto -L$(PWD)/lib -lfttp
 TOPDIR	:= $(PWD)
 
 export CFLAGS TOPDIR CC AR

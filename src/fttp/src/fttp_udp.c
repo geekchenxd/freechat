@@ -21,6 +21,7 @@
 #include "fttp_default.h"
 #include "fttp_udp.h"
 #include "debug.h"
+#include "crypt.h"
 
 static int fttp_socket = -1;
 static int fttp_port = 0;
@@ -110,7 +111,7 @@ int fttp_decode_address(
  * on error, or return the bytes received.
  */
 uint16_t fttp_receive_udp (
-		struct fttp_addr *src, uint8_t *pdu,
+		struct fttp_addr *src, uint8_t *lpdu,
 		uint16_t max_pdu, uint32_t timeout)
 {
 
@@ -122,6 +123,7 @@ uint16_t fttp_receive_udp (
     struct sockaddr_in sin = { 0 };
     socklen_t sin_len = sizeof(sin);
     uint16_t i = 0;
+	uint8_t pdu[MAX_PDU] = {0x0};
 
     /* is the socket is opened? */
     if (fttp_socket < 0)
@@ -169,13 +171,18 @@ uint16_t fttp_receive_udp (
 	memcpy(&src->addr[0], &sin.sin_addr.s_addr, 4);
 	memcpy(&src->addr[4], &sin.sin_port, 2);
 
-	for (i = 0; i < recv_bytes; i++) {
-		pdu[i] = pdu[i + 1];
+	pdu_len = fttp_decrypt(&pdu[1], recv_bytes, lpdu);
+	if (pdu_len <= 0) {
+		debug(ERROR, "fttp decrypt pdu failed!\n");
+		pdu_len = 0;
+	}
+	for (i = 0; i < pdu_len; i++) {
 		debug(INFO, "0x%x ", pdu[i]);
 	}
 	debug(INFO, "\n");
-	if (recv_bytes < max_pdu)
-		pdu_len = recv_bytes;
+
+	if (pdu_len > max_pdu)
+		pdu_len = 0;
 
 	return pdu_len;
 }
@@ -190,6 +197,7 @@ int32_t fttp_send_udp(struct fttp_addr *dest,
 {
 	struct sockaddr_in fttp_dest;
 	int bytes_sent = 0;
+	int len = 0;
 	uint8_t buf[MAX_PDU] = {0x0};
 
 	struct in_addr address;
@@ -210,9 +218,17 @@ int32_t fttp_send_udp(struct fttp_addr *dest,
 	fttp_dest.sin_port = port;
 	memset(&(fttp_dest.sin_zero), '\0', 8);
 
+	len = fttp_encrypt(pdu, pdu_len, &buf[1]);
+	if (len <= 0) {
+		debug(DEBUG, "UDP encrypt data failed!\n");
+		return 0;
+	}
+
     buf[0] = FTTP_SIGNATURE;
+	len += 1;
+				
 	memcpy(&buf[1], pdu, pdu_len);
-	bytes_sent = sendto(fttp_socket, (char *)buf, pdu_len + 1, 0,
+	bytes_sent = sendto(fttp_socket, (char *)buf, len, 0,
 			(struct sockaddr *)&fttp_dest, sizeof(struct sockaddr));
 	if (bytes_sent > 0) {
 		debug(DEBUG, "UDP send data len = %d\n", bytes_sent);
