@@ -67,8 +67,8 @@ int parser_user_self(config_t *cfg)
 		  if (!self)
 			  return -1;
 		  self->user->sex = type;
-		  memcpy(self->user->signature, per_signature, sizeof(self->user->signature));
-		  memcpy(self->user->birthday, birthday, sizeof(self->user->birthday));
+		  memcpy(self->user->signature, per_signature, strlen(per_signature) + 1);
+		  memcpy(self->user->birthday, birthday, strlen(birthday) + 1);
 
 		  user_list_add(&client.user, self);
 #if 0

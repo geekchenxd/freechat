@@ -125,8 +125,9 @@ void send_user_rsp(struct fttp_addr *dest,
 	len = fttp_encode_id(&npdu[pdu_len], me->id);
 	pdu_len += len;
 
+	me->name[strlen(me->name)] = '\0';
 	len = fttp_encode_string(&npdu[pdu_len], (uint8_t *)me->name, 
-			(uint32_t)strlen(me->name));
+			(uint32_t)strlen(me->name) + 1);
 	pdu_len += len;
 
 	len = fttp_encode_string(&npdu[pdu_len], (uint8_t *)me->signature, 
