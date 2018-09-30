@@ -26,6 +26,11 @@
 #endif
 #define FTTP_MAX_TEXT_SIZE 200
 
+#define MAX_FILE_SIZE_PER MAX_APDU - 32
+#ifndef MAX_FILE_SIZE
+#define MAX_FILE_SIZE  1024 * 1024 * 1024 /*bytes = 1Gib*/
+#endif
+
 struct fttp_addr {
 	/*addr_len is 0 indicate a broadcast address*/
 	uint8_t addr_len;

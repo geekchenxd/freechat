@@ -3,6 +3,7 @@
 #include <openssl/err.h>
 #include <openssl/rand.h>
 #include <string.h>   
+#include <stdint.h>
 #include "crypt.h"
 
 
