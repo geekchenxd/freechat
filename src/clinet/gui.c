@@ -28,6 +28,10 @@ int init_gui(uint8_t size)
 	/*use the system's locale to support Chinese*/
 	setlocale(LC_ALL, "");
     initscr();
+
+	/*set cursor Invisible*/
+	curs_set(0);
+
     start_color();
     init_pair(1, COLOR_BLACK, COLOR_GREEN);
     init_pair(2, COLOR_BLACK, COLOR_RED);
@@ -122,15 +126,21 @@ void show_base_info(WINDOW *display)
 	 */
 	if (flag_t) {
 		draw_new(display, "Advanced Options:");
-		draw_new(display, ":server    Connect to server.");
-		draw_new(display, ":setserver Set default server info.");
+		draw_new(display, ":server    Set default server info.");
 		draw_new(display, ":info      Display user details.");
 		draw_new(display, ":edit      Edit my info.");
 		draw_new(display, ":refresh   Refresh user list.");
 		draw_new(display, ":log       Save chat log.");
-		draw_new(display, ":disable   Disable users' message.");
-		draw_new(display, ":list      Display disabled user list.");
-		draw_new(display, ":enable    Enable users' message.");
+		draw_new(display, ":lock      Disable users' message.");
+		draw_new(display, ":locked    Display disabled user list.");
+		draw_new(display, ":unlock    Enable users' message.");
+		draw_new(display, ":login     Log in the server.");
+		draw_new(display, ":logout    Log out from the server.");
+		draw_new(display, ":register  Register to server.");
+		draw_new(display, ":unreg     Unregister from server.");
+		draw_new(display, ":create    Create a room.");
+		draw_new(display, ":destroy   Destroy room");
+		draw_new(display, ":bcast     Broadcast messages.");
 		draw_new(display, "**************************************************\n");
 	}
 	flag_t = true;

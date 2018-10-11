@@ -481,7 +481,7 @@ void advanced_options(char *cmd, struct client *p)
 	 * enable contact
 	 * set server info
 	 */
-	if (strcasecmp(cmd, ":server") == 0) {
+	if (strcasecmp(cmd, ":login") == 0) {
 		werase(p->gui.input);
 		connect_server(p);
 	} else if (strcasecmp(cmd, ":info") == 0) {
@@ -496,16 +496,16 @@ void advanced_options(char *cmd, struct client *p)
 	} else if (strcasecmp(cmd, ":log") == 0) {
 		werase(p->gui.input);
 		save_log(p);
-	} else if (strcasecmp(cmd, ":disable") == 0) {
+	} else if (strcasecmp(cmd, ":lock") == 0) {
 		werase(p->gui.input);
 		set_msg_enable_flag(p, false);
-	} else if (strcasecmp(cmd, ":list") == 0) {
+	} else if (strcasecmp(cmd, ":locked") == 0) {
 		werase(p->gui.input);
 		disabled_list(p);
-	} else if (strcasecmp(cmd, ":enable") == 0) {
+	} else if (strcasecmp(cmd, ":unlock") == 0) {
 		werase(p->gui.input);
 		set_msg_enable_flag(p, true);
-	} else if (strcasecmp(cmd, ":setserver") == 0) {
+	} else if (strcasecmp(cmd, ":server") == 0) {
 		werase(p->gui.input);
 		set_server(p);
 	} else {
@@ -522,11 +522,13 @@ void* typing_func(void *arg)
 	struct client *p = (struct client *)arg;
     char message_buffer[LENGHT_MESSAGE];
     char message_buffer_2[LENGHT_MESSAGE];
+	int typing_len = 0;
 
 	while (state == 0) {
         /*clear the message buffer*/
         strcpy(message_buffer, "");
         strcpy(message_buffer_2, "");
+		typing_len = 0;
 
 		cmd = wgetch(p->gui.input);
 		if (cmd == '\n')
@@ -574,7 +576,41 @@ void* typing_func(void *arg)
 			continue;
 		default:
 			message_buffer[0] = (char)cmd;
+			typing_len = 1;
+
+			while (1) {
+				cmd = wgetch(p->gui.input);
+				if (cmd == '\n') {
+					/*end with typing*/
+					message_buffer[typing_len] = '\0';
+					break;
+				} else if (cmd == 8 || cmd == 127) {
+					/*handle back space*/
+#if 0
+					/*here for Chinese handle*/
+					if (0x80 & (message_buffer[typing_len])) {
+						typing_len -= 3; /*utf-8 linux mode*/
+					} else {
+						typing_len--;
+					}
+#else
+					typing_len--;
+#endif
+					message_buffer[typing_len] = '\0';
+					werase(p->gui.input);
+
+					/*all input char is deleted*/
+					if (typing_len == 0)
+						break;
+					wprintw(p->gui.input, "%s", message_buffer);
+					wrefresh(p->gui.input);
+				} else {
+					message_buffer[typing_len++] = cmd;
+				}
+			}
+#if 0
 			wscanw(p->gui.input, " %[^\n]s", &message_buffer[1]);
+#endif
 			if (strlen(message_buffer) > 200) {
 				werase(p->gui.input);
 				draw_new(p->gui.input, "freechat>> Message cannot more than 200 characters.");
@@ -583,6 +619,10 @@ void* typing_func(void *arg)
 				werase(p->gui.input);
 				continue;
 			}
+			/*no input or input is all be deleted by back space*/
+			if (typing_len == 0)
+				continue;
+
 			if (message_buffer[0] == ':') {
 				advanced_options(&message_buffer[0], p);
 				continue;

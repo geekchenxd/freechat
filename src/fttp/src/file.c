@@ -214,6 +214,8 @@ void handler_file_read_req(uint8_t *data, uint16_t data_len,
 	}
 
 	/*here add file worker*/
+	if (agree && valid && access) {
+	}
 
 out:
 	fttp_rsp_file_req(src, agree, access, valid, session_id);
