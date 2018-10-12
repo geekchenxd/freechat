@@ -8,6 +8,51 @@ extern int g_bottom_line;
 extern pthread_t *global_display_thread;
 static struct user_list *current;
 
+void wait_for_confirm(WINDOW *win)
+{
+	int len;
+	char *notes = "Press any key to confirm this notes!";
+
+	len = strlen(notes);
+
+	mvwaddstr(win, 3, 1, notes);
+	wattron(win, A_REVERSE);
+	mvwaddstr(win, 3, len + 2, "OK");
+	wattroff(win, A_REVERSE);
+	wgetch(win);
+}
+
+/*
+ * get the confirm options from user input,options are:
+ * y indicate yes and return true
+ * n inicate no and return false.
+ */
+bool get_user_option(WINDOW *win, char *tips)
+{
+	bool status = false;
+
+	if (!win || !tips)
+		return status;
+
+	mvwaddstr(win, 3, 1, tips);
+	wattron(win, A_REVERSE);
+	mvwaddstr(win, 3, strlen(tips) + 2, "yes/no");
+	wattroff(win, A_REVERSE);
+	
+	while (1) {
+		int ch = wgetch(win);
+		if (ch == 'y') {
+			status = true;
+			break;
+		} else if (ch == 'n') {
+			status = false;
+			break;
+		}
+	}
+
+	return status;
+}
+
 bool user_is_current(struct user_list *user)
 {
 	return (user == current);
@@ -18,7 +63,7 @@ void remove_current_select(struct client *p)
 	if (!current) {
 		wprintw(p->gui.input, "freechat>> No user has been selected.");
 		wrefresh(p->gui.input);
-		usleep(500000);
+		wait_for_confirm(p->gui.input);
 		werase(p->gui.input);
 		wrefresh(p->gui.input);
 		return;
@@ -26,11 +71,13 @@ void remove_current_select(struct client *p)
 
 	wprintw(p->gui.input, "freechat>> Unselect %s\n", current->user->name);
 	wrefresh(p->gui.input);
-	current = NULL;
-	usleep(500000);
-	werase(p->gui.single_line);
-    wbkgd(p->gui.single_line, COLOR_PAIR(4));
-	wrefresh(p->gui.single_line);
+	if (get_user_option(p->gui.input, 
+			"Confirm to unselect the current user? ")) {
+		current = NULL;
+		werase(p->gui.single_line);
+		wbkgd(p->gui.single_line, COLOR_PAIR(4));
+		wrefresh(p->gui.single_line);
+	}
 	werase(p->gui.input);
 	wrefresh(p->gui.input);
 }
@@ -63,7 +110,7 @@ void update_current_select(struct client *p)
 				"the user '%s' is not in current list,^A to show all list\n",
 				name);
 		wrefresh(display);
-		usleep(500000);
+		wait_for_confirm(display);
 		werase(display);
 		return;
 	}
@@ -92,7 +139,7 @@ void send_file(struct client *p)
 		werase(display);
 		wprintw(display, "freechat>> Please select contact first!\n");
 		wrefresh(display);
-		usleep(500000);
+		wait_for_confirm(display);
 		werase(display);
 		return;
 	}
@@ -113,7 +160,7 @@ void send_file(struct client *p)
 	werase(display);
 	wprintw(display, "freechat>> Sending file %s\n", name);
 	wrefresh(display);
-	usleep(500000);
+	wait_for_confirm(display);
 	werase(display);
 }
 
@@ -146,7 +193,7 @@ void search_text(struct client *p)
 	if (search(text, p->gui.display)) {
 		wprintw(display, "the text '%s' you are searching not fount in current reccord.\n");
 		wrefresh(display);
-		usleep(500000);
+		wait_for_confirm(display);
 		werase(display);
 		return;
 	}
@@ -257,7 +304,7 @@ void connect_server(struct client *p)
 		werase(display);
 		wprintw(display, "freechat>> Invalid IP address.\n");
 		wrefresh(display);
-		usleep(500000);
+		wait_for_confirm(display);
 		werase(display);
 		return;
 	}
@@ -272,7 +319,7 @@ void connect_server(struct client *p)
 		werase(display);
 		wprintw(display, "freechat>> Invalid port.\n");
 		wrefresh(display);
-		usleep(500000);
+		wait_for_confirm(display);
 		werase(display);
 		return;
 	}
@@ -319,7 +366,7 @@ void contact_info(struct client *p)
 		werase(display);
 		wprintw(display, "freechat>> Invalid name.\n");
 		wrefresh(display);
-		usleep(500000);
+		wait_for_confirm(display);
 		werase(display);
 		return;
 	}
@@ -330,7 +377,7 @@ void contact_info(struct client *p)
 				"the user '%s' is not in current list,^A to show all list\n",
 				name);
 		wrefresh(display);
-		usleep(500000);
+		wait_for_confirm(display);
 		werase(display);
 		return;
 	}
@@ -386,7 +433,7 @@ void set_msg_enable_flag(struct client *p, bool flag)
 		werase(display);
 		wprintw(display, "freechat>> Invalid name.\n");
 		wrefresh(display);
-		usleep(500000);
+		wait_for_confirm(display);
 		werase(display);
 		return;
 	}
@@ -397,7 +444,7 @@ void set_msg_enable_flag(struct client *p, bool flag)
 				"the user '%s' is not in current list,^A to show all list\n",
 				name);
 		wrefresh(display);
-		usleep(500000);
+		wait_for_confirm(display);
 		werase(display);
 		return;
 	}
@@ -431,7 +478,7 @@ void set_server(struct client *p)
 		werase(display);
 		wprintw(display, "freechat>> Invalid IP address.\n");
 		wrefresh(display);
-		usleep(500000);
+		wait_for_confirm(display);
 		werase(display);
 		return;
 	}
@@ -446,7 +493,7 @@ void set_server(struct client *p)
 		werase(display);
 		wprintw(display, "freechat>> Invalid port.\n");
 		wrefresh(display);
-		usleep(500000);
+		wait_for_confirm(display);
 		werase(display);
 		return;
 	}
@@ -461,6 +508,12 @@ void set_server(struct client *p)
 	char tmp[12] = {0};
 	sprintf(tmp, "%u", port);
 	draw_new(p->gui.display, tmp);
+}
+
+void clean_display(WINDOW *display)
+{
+	werase(display);
+	wrefresh(display);
 }
 
 /*
@@ -480,6 +533,7 @@ void advanced_options(char *cmd, struct client *p)
 	 * show disabled list
 	 * enable contact
 	 * set server info
+	 * clear the display
 	 */
 	if (strcasecmp(cmd, ":login") == 0) {
 		werase(p->gui.input);
@@ -508,10 +562,13 @@ void advanced_options(char *cmd, struct client *p)
 	} else if (strcasecmp(cmd, ":server") == 0) {
 		werase(p->gui.input);
 		set_server(p);
+	} else if (strcasecmp(cmd, ":clear") == 0) {
+		werase(p->gui.input);
+		clean_display(p->gui.display);
 	} else {
 		draw_new(p->gui.input, "freechat>> Invalid command!\n");
 		wrefresh(p->gui.input);
-		usleep(500000);
+		wait_for_confirm(p->gui.input);
 		werase(p->gui.input);
 	}
 }
@@ -615,7 +672,7 @@ void* typing_func(void *arg)
 				werase(p->gui.input);
 				draw_new(p->gui.input, "freechat>> Message cannot more than 200 characters.");
 				wrefresh(p->gui.input);
-				usleep(500000);
+				wait_for_confirm(p->gui.input);
 				werase(p->gui.input);
 				continue;
 			}
@@ -631,7 +688,7 @@ void* typing_func(void *arg)
 			if (!current) {
 				wprintw(p->gui.input, "%s\n", "freechat>> select a user to send or input correct cmd");
 				wrefresh(p->gui.input);
-				usleep(500000);
+				wait_for_confirm(p->gui.input);
 				werase(p->gui.input);
 				continue;
 			}
@@ -643,7 +700,7 @@ void* typing_func(void *arg)
 					current->user->id, p->user->user->id) <= 0) {
 			wprintw(p->gui.input, "%s\n", "freechat>> Send failed");
 			wrefresh(p->gui.input);
-			usleep(500000);
+			wait_for_confirm(p->gui.input);
 			werase(p->gui.input);
 			continue;
 		}

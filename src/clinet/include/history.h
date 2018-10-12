@@ -5,17 +5,18 @@
 #include <stdint.h>
 #include <ncurses.h>
 
-#define LENLINE 500 //define limit lenght of each one line
+/*max line length limite*/
+#define LEN_LINE 500 
 
-//global variable assignment
+
 struct node {
 	int line_number;
-	char string[LENLINE];
-	struct node *next; //next and previous address node linked
+	char string[LEN_LINE];
+	struct node *next;
 };
 
 uint32_t get_display_height();
-void add_line(char *string);
+void add_record(char *string);
 void draw_new(WINDOW *display, char *string);
 void draw_old_line(WINDOW *display, int option, int line_user_want_scroll);
 

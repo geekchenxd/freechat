@@ -67,7 +67,7 @@ void initial_buffer_screen(int dis_h, int ty_h)
 //
 // }
 
-void add_line(char *string){
+void add_record(char *string){
 
 	//move pointer to last node
 	while(current->next != 0) 
@@ -98,8 +98,8 @@ void draw_new(WINDOW *display, char *string) {
 	if (!string)
 		return;
 
-	//Add new line into node-linked list
-	add_line(string);
+	/*record*/
+	add_record(string);
 
 	//Print string on screen by addstr (ncurse command)
 	screen = current;

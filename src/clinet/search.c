@@ -10,7 +10,7 @@ int search(char *word, WINDOW *display){
 
     int current_line = line_amount - 2;
     int count = 0;
-    char buffer[LENLINE];
+    char buffer[LEN_LINE];
 
 	while(current->next != 0 && count < current_line){
 		current = current->next;
