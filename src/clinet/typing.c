@@ -2,11 +2,23 @@
 #include "search.h"
 #include "gui.h"
 #include "fttp.h"
+#include "config.h"
 
 extern int state;
 extern int g_bottom_line;
 extern pthread_t *global_display_thread;
 static struct user_list *current;
+
+
+/*
+ * return the bytes number of one 
+ * Chinese character
+ */
+static int get_cn_len(void)
+{
+	char *s = "测试";
+	return strlen(s)/2;
+}
 
 void wait_for_confirm(WINDOW *win)
 {
@@ -464,6 +476,8 @@ void set_server(struct client *p)
 	char ip[16] = {0};
 	uint16_t port = 0;
 	WINDOW *display = NULL;
+	bool ip_changed = true;
+	bool port_changed = true;
 
 	if (!p)
 		return;
@@ -474,7 +488,9 @@ void set_server(struct client *p)
 	wrefresh(display);
 
 	wscanw(display, " %[^\n]s", &ip[0]);
-	if ((strlen(ip) > 16) || !(ip_is_valid(&ip[0]))) {
+	if (strlen(ip) == 0) {
+		ip_changed = false;
+	} else if ((strlen(ip) > 16) || !(ip_is_valid(&ip[0]))) {
 		werase(display);
 		wprintw(display, "freechat>> Invalid IP address.\n");
 		wrefresh(display);
@@ -483,13 +499,19 @@ void set_server(struct client *p)
 		return;
 	}
 	werase(display);
+	if (ip_changed) {
+		memcpy(p->info.serverip, ip, strlen(ip));
+		p->info.serverip[strlen(ip)] = '\0';
+	}
 	
 	/*get server port*/
 	wprintw(display, "freechat>>[server port(null is default):]");
 	wrefresh(display);
 
 	wscanw(display, "%u", &port);
-	if (!(port_is_valid(port))) {
+	if (port == 0) {
+		port_changed = false;
+	} else if (!(port_is_valid(port))) {
 		werase(display);
 		wprintw(display, "freechat>> Invalid port.\n");
 		wrefresh(display);
@@ -498,16 +520,23 @@ void set_server(struct client *p)
 		return;
 	}
 	werase(display);
-
+	if (port_changed)
+		p->info.serverport = port;
 
 	/*
 	 * here set the server ip and port to configure file.
 	 */
-	/*debug*/
-	draw_new(p->gui.display, ip);
-	char tmp[12] = {0};
-	sprintf(tmp, "%u", port);
-	draw_new(p->gui.display, tmp);
+	update_serverip_config((char *)p->info.serverip, p->cfg_path);
+	update_serverport_config(p->info.serverport, p->cfg_path);
+
+	/*
+	 * tips
+	 */
+	werase(display);
+	wprintw(display, "Set server info successed!\n");
+	wrefresh(display);
+	wait_for_confirm(display);
+	werase(display);
 }
 
 void clean_display(WINDOW *display)
@@ -575,11 +604,14 @@ void advanced_options(char *cmd, struct client *p)
 
 void* typing_func(void *arg) 
 {
+	int cn_len = 0; /*bytes number of one Chinese character*/
 	int cmd = 0;
 	struct client *p = (struct client *)arg;
     char message_buffer[LENGHT_MESSAGE];
     char message_buffer_2[LENGHT_MESSAGE];
 	int typing_len = 0;
+
+	cn_len = get_cn_len();
 
 	while (state == 0) {
         /*clear the message buffer*/
@@ -643,16 +675,14 @@ void* typing_func(void *arg)
 					break;
 				} else if (cmd == 8 || cmd == 127) {
 					/*handle back space*/
-#if 0
-					/*here for Chinese handle*/
-					if (0x80 & (message_buffer[typing_len])) {
-						typing_len -= 3; /*utf-8 linux mode*/
+					
+					/*here for Chinese delete handle*/
+					if (message_buffer[typing_len - 1] >= 0x80) {
+						typing_len -= cn_len; /*utf-8 linux mode*/
 					} else {
 						typing_len--;
 					}
-#else
-					typing_len--;
-#endif
+
 					message_buffer[typing_len] = '\0';
 					werase(p->gui.input);
 

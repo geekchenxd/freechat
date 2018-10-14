@@ -30,6 +30,7 @@ struct client {
 	struct info info;
 	struct user_list *user;
 	char *ifname;
+	char *cfg_path;
 };
 
 extern struct client client;

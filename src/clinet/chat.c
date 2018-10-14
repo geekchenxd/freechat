@@ -78,7 +78,7 @@ int main(int argc , char *argv[])
 	int opt;
 	char *optstring = "hvc:";
 	bool cmd_path = false;
-    pthread_t typing_thread, display_thread;
+	pthread_t typing_thread, display_thread;
 
 	p = &client;
 
@@ -110,13 +110,13 @@ int main(int argc , char *argv[])
 	}
 	/* parser configure file */
 	if (cmd_path) {
-		if (config_parser(argv[2], &client.info)) {
+		if (config_parser(argv[2], &client)) {
 			print_usage();
 			fprintf(stderr, "init configure failed\n");
 			exit(1);
 		}
 	} else {
-		if (config_parser(CONFIGFILEPATH, &client.info)) {
+		if (config_parser(CONFIGFILEPATH, &client)) {
 			print_usage();
 			fprintf(stderr, "init configure failed\n");
 			exit(1);

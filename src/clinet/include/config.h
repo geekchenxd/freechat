@@ -8,6 +8,8 @@
 
 extern char ethname[20];
 
-int config_parser(const char *path, struct info *info);
+int config_parser(const char *path, struct client *client);
+int update_serverport_config(uint16_t port, char *configfile);
+int update_serverip_config(char *ip, char *configfile);
 
 #endif

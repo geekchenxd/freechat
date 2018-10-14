@@ -1,44 +1,122 @@
 #include "config.h"
 
-#if 0
-int main(int argc, char **argv)
+config_t *get_config_root(const char *path)
 {
-  config_t cfg;
-  config_setting_t *setting;
+	config_t *cfg = NULL;
 
-  config_init(&cfg);
-
-  /* Read the file. If there is an error, report it and exit. */
-  if(! config_read_file(&cfg, "init.cfg"))
-  {
-    fprintf(stderr, "%s:%d - %s\n", config_error_file(&cfg),
-            config_error_line(&cfg), config_error_text(&cfg));
-    config_destroy(&cfg);
-    return(EXIT_FAILURE);
-  }
-
-
-  /* Get the server configure information. */
-  setting = config_lookup(&cfg, "server_info");
-  if(setting != NULL)
-  {
-	  char *ip;
-	  int serverport;
-	  int local_port;
-	  int port_local;
-      if((config_setting_lookup_string(setting, "serverip", &ip)
-           && config_setting_lookup_int(setting, "serverport", &serverport)
-           && config_setting_lookup_int(setting, "local_port", &local_port)
-           && config_setting_lookup_int(setting, "port_local", &port_local))) {
-		  printf("IP is %s\nserverport is %d\nlocal_port is %d\nport_local is %d\n",
-				  ip, serverport, local_port, port_local);
-	  }
-  }
-
-  config_destroy(&cfg);
-  return(EXIT_SUCCESS);
+	cfg = (config_t *)malloc(sizeof(config_t));
+	if (cfg == NULL)
+		goto err;
+	config_init(cfg);
+	if (!config_read_file(cfg, path)) {
+		config_destroy(cfg);
+		free(cfg);
+		goto err;
+	}
+err:
+	return cfg;
 }
-#endif
+
+int cofig_up_file(config_t *cfg, const char *path)
+{
+	return config_write_file(cfg, path);
+}
+
+int config_up_servip(config_t *cfg, char *newip)
+{
+	int error = 0;
+	config_setting_t *setting;
+
+	setting = config_lookup(cfg, "server_info.serverip");
+	if(setting == NULL) {
+		error = -1;
+		goto out;
+	}
+	config_setting_set_string(setting, newip);
+
+out:
+	return error;
+}
+
+int config_up_servport(config_t *cfg, uint16_t newport)
+{
+	int error = 0;
+	config_setting_t *setting;
+
+	setting = config_lookup(cfg, "server_info.serverport");
+	if(setting == NULL) {
+		error = -1;
+		goto out;
+	}
+	config_setting_set_int(setting, newport);
+
+out:
+	return error;
+}
+
+int config_up_nickname(config_t *cfg, char *name)
+{
+	int error = 0;
+	config_setting_t *setting;
+
+	setting = config_lookup(cfg, "client_info.nickname");
+	if(setting == NULL) {
+		error = -1;
+		goto out;
+	}
+	config_setting_set_string(setting, name);
+
+out:
+	return error;
+}
+
+int config_up_user_type(config_t *cfg, int type)
+{
+	int error = 0;
+	config_setting_t *setting;
+
+	setting = config_lookup(cfg, "client_info.user_type");
+	if(setting == NULL) {
+		error = -1;
+		goto out;
+	}
+	config_setting_set_int(setting, type);
+
+out:
+	return error;
+}
+
+int config_up_signature(config_t *cfg, char *signature)
+{
+	int error = 0;
+	config_setting_t *setting;
+
+	setting = config_lookup(cfg, "client_info.signature");
+	if(setting == NULL) {
+		error = -1;
+		goto out;
+	}
+	config_setting_set_string(setting, signature);
+
+out:
+	return error;
+}
+
+int config_up_birthday(config_t *cfg, char *birthday)
+{
+	int error = 0;
+	config_setting_t *setting;
+
+	setting = config_lookup(cfg, "client_info.birthday");
+	if(setting == NULL) {
+		error = -1;
+		goto out;
+	}
+	config_setting_set_string(setting, birthday);
+
+out:
+	return error;
+}
 
 int parser_user_self(config_t *cfg)
 {
@@ -120,12 +198,16 @@ int parser_server_info(config_t *cfg, struct info *info)
 	return 0;
 }
 
-int config_parser(const char *path, struct info *info)
+int config_parser(const char *path, struct client *client)
 {
 	config_t cfg;
 
 	config_init(&cfg);
 
+	if (!path || !client)
+		return -1;
+
+	client->cfg_path = (char *)path;
 	/* Read the file. If there is an error, report it and exit. */
 	if (!config_read_file(&cfg, path)) {
 		fprintf(stderr, "%s:%d - %s\n", config_error_file(&cfg),
@@ -134,7 +216,7 @@ int config_parser(const char *path, struct info *info)
 		return -1;
 	}
 
-	if (parser_server_info(&cfg, info)) {
+	if (parser_server_info(&cfg, &client->info)) {
 		config_destroy(&cfg);
 		return -2;
 	}
@@ -149,3 +231,86 @@ int config_parser(const char *path, struct info *info)
 	return 0;
 }
 
+int update_serverip_config(char *ip, char *configfile)
+{
+	config_t *pcfg = NULL;
+	int error = 0;
+
+	pcfg = get_config_root(configfile);
+	if (!pcfg)
+	  return -1;
+	/*return zero on successed*/
+	error = config_up_servip(pcfg, ip);
+	if (error)
+	  return error;
+	cofig_up_file(pcfg, configfile);
+	config_destroy(pcfg);
+
+	return error;
+}
+
+int update_serverport_config(uint16_t port, char *configfile)
+{
+	config_t *pcfg = NULL;
+	int error = 0;
+
+	pcfg = get_config_root(configfile);
+	if (!pcfg)
+	  return -1;
+	/*return zero on successed*/
+	error = config_up_servport(pcfg, port);
+	if (error)
+	  return error;
+	cofig_up_file(pcfg, configfile);
+	config_destroy(pcfg);
+
+	return error;
+}
+#if 0
+int main(int argc, char **argv)
+{
+  config_t cfg, *pcfg;
+  config_setting_t *setting;
+
+  config_init(&cfg);
+
+  /* Read the file. If there is an error, report it and exit. */
+  if(! config_read_file(&cfg, "init.cfg"))
+  {
+    fprintf(stderr, "%s:%d - %s\n", config_error_file(&cfg),
+            config_error_line(&cfg), config_error_text(&cfg));
+    config_destroy(&cfg);
+    return(EXIT_FAILURE);
+  }
+
+
+  /* Get the server configure information. */
+  setting = config_lookup(&cfg, "server_info");
+  if(setting != NULL)
+  {
+	  char *ip;
+	  int serverport;
+	  int local_port;
+	  int port_local;
+      if((config_setting_lookup_string(setting, "serverip", (const char **)&ip)
+           && config_setting_lookup_int(setting, "serverport", &serverport)
+           && config_setting_lookup_int(setting, "local_port", &local_port)
+           && config_setting_lookup_int(setting, "port_local", &port_local))) {
+		  printf("IP is %s\nserverport is %d\nlocal_port is %d\nport_local is %d\n",
+				  ip, serverport, local_port, port_local);
+	  }
+  }
+
+  config_destroy(&cfg);
+
+  /*test for modify configure*/
+  pcfg = get_config_root("init.cfg");
+  /*return zero on successed*/
+  printf("%d\n",config_up_servip(pcfg, "192.168.7.104"));
+  printf("%d\n",config_up_nickname(pcfg, "donggebadao"));
+  printf("%d\n",config_up_user_type(pcfg, 4));
+  cofig_up_file(pcfg, "init.cfg");
+  config_destroy(pcfg);
+  return(EXIT_SUCCESS);
+}
+#endif
