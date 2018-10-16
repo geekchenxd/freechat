@@ -419,8 +419,18 @@ void edit_myself(struct client *p)
 
 void refresh_list(struct client *p)
 {
+	struct user_list *head = p->user;
+	struct user_list *tmp = head->next;
+
 	/*1.delete all user except myself and chat room*/
+	while (tmp) {
+		head->next = tmp->next;
+		free(tmp);
+		tmp = head->next;
+	}
+
 	/*2.send user request to broad cast*/
+	send_user_req();
 }
 
 void save_log(struct client *p)

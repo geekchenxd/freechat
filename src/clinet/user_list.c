@@ -47,13 +47,17 @@ struct user_list *user_list_init_user(
 
 void user_list_add(struct user_list **head, struct user_list *new)
 {
+	struct user_list *tmp = *head;
 	if (!new)
 		return;
 
-	if (!*head)
+	if (!*head) {
 		*head = new;
-	else
-		(*head)->next = new;
+	} else {
+		while (tmp->next)
+			tmp = tmp->next;
+		tmp->next = new;
+	}
 }
 
 struct user_list *user_list_find(struct user_list *head, char *nickname)
