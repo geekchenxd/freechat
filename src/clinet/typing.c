@@ -286,7 +286,7 @@ bool birthday_is_valid(char *birthday)
 		return status;
 
 	if (sscanf(birthday, "%d-%d-%d", &year, &mon, &day) == 3
-			&& year >= 1980 && year <= 2020 && mon >= 1 && mon <= 12
+			&& year >= 1970 && year <= 2020 && mon >= 1 && mon <= 12
 			&& day >= 1 && day <= 31) {
 		sprintf(temp, "%04d-%02d-%02d", year, mon, day);
 		if (strcmp(temp, birthday) == 0) {
@@ -415,6 +415,124 @@ void contact_info(struct client *p)
 
 void edit_myself(struct client *p)
 {
+	char name[FTTPMAXNAMESIZE] = {0x0};
+	char signature[FTTPMAXSIGNATURESIZE] = {0x0};
+	char birthday[FTTPMAXBIRTHDAYSIZE] = {0x0};
+	uint8_t sex = 0;
+	WINDOW *display = NULL;
+	bool changed = true;
+	bool update = false;
+
+	if (!p)
+		return;
+	display = p->gui.input;
+
+	/*get name*/
+	wprintw(display, "freechat>>[name(null is default):]");
+	wrefresh(display);
+
+	wscanw(display, " %[^\n]s", &name[0]);
+	if (strlen(name) == 0) {
+		changed = false;
+	} else if (strlen(name) >= FTTPMAXNAMESIZE) {
+		werase(display);
+		wprintw(display, "freechat>> The name is too long.\n");
+		wrefresh(display);
+		wait_for_confirm(display);
+		werase(display);
+		goto out;
+	}
+	werase(display);
+	if (changed) {
+		update = true;
+		memcpy(p->user->user->name, name, FTTPMAXNAMESIZE);
+		p->user->user->name[strlen(name)] = '\0';
+		update_name_config((char *)p->user->user->name, p->cfg_path);
+	}
+	
+	/*get signature*/
+	wprintw(display, "freechat>>[signature(null is default):]");
+	wrefresh(display);
+
+	wscanw(display, " %[^\n]s", &signature[0]);
+	if (strlen(signature) == 0) {
+		changed = false;
+	} else if (strlen(signature) >= FTTPMAXSIGNATURESIZE) {
+		werase(display);
+		wprintw(display, "freechat>> The signature is too long.\n");
+		wrefresh(display);
+		wait_for_confirm(display);
+		werase(display);
+		goto out;
+	}
+	werase(display);
+	if (changed) {
+		update = true;
+		memcpy(p->user->user->signature, signature, FTTPMAXNAMESIZE);
+		p->user->user->signature[strlen(signature)] = '\0';
+		update_signature_config((char *)p->user->user->signature, p->cfg_path);
+	}
+
+	/*get birthday*/
+	wprintw(display, "freechat>>[birthday format:year-mon-day(null is default):]");
+	wrefresh(display);
+
+	wscanw(display, " %[^\n]s", &birthday[0]);
+	if (strlen(birthday) == 0) {
+		changed = false;
+	} else if ((strlen(birthday) >= FTTPMAXBIRTHDAYSIZE)
+		   	|| (!birthday_is_valid(birthday))) {
+		werase(display);
+		wprintw(display, "freechat>> The birthday is invalid.\n");
+		wrefresh(display);
+		wait_for_confirm(display);
+		werase(display);
+		goto out;
+	}
+	werase(display);
+	if (changed) {
+		update = true;
+		memcpy(p->user->user->birthday, birthday, FTTPMAXNAMESIZE);
+		p->user->user->birthday[strlen(birthday)] = '\0';
+		update_birthday_config((char *)p->user->user->birthday, p->cfg_path);
+	}
+	/*get server port*/
+	wprintw(display, "freechat>>[sex:0 for boy, 1 for girl(null is default):]");
+	wrefresh(display);
+
+	wscanw(display, "%d", &sex);
+	if (sex == 0) {
+		changed = false;
+	} else if ((sex != 0) && (sex != 1)) {
+		werase(display);
+		wprintw(display, "freechat>> Invalid sex.\n");
+		wprintw(display, "freechat>> input 0 for boy, 1 for girl.\n");
+		wrefresh(display);
+		wait_for_confirm(display);
+		werase(display);
+		goto out;
+	}
+	werase(display);
+	if (changed) {
+		update = true;
+		p->user->user->sex = sex;
+		update_sex_config((uint8_t)p->user->user->sex, p->cfg_path);
+	}
+
+out:
+	if (update) {
+		struct fttp_addr dest;
+		fttp_get_broadcast_address(&dest);
+		send_user_rsp(&dest, p->user->user);
+
+		/* tips */
+		werase(display);
+		wprintw(display, "Set your info successed!\n");
+		wrefresh(display);
+		wait_for_confirm(display);
+		werase(display);
+		wrefresh(display);
+	}
 }
 
 void refresh_list(struct client *p)
@@ -422,14 +540,22 @@ void refresh_list(struct client *p)
 	struct user_list *head = p->user;
 	struct user_list *tmp = head->next;
 
-	/*1.delete all user except myself and chat room*/
+	/*if current is selected, unselect it*/
+	if (current) {
+		current = NULL;
+		werase(p->gui.single_line);
+		wbkgd(p->gui.single_line, COLOR_PAIR(4));
+		wrefresh(p->gui.single_line);
+	}
+
+	/*delete all user except myself and chat room*/
 	while (tmp) {
 		head->next = tmp->next;
 		free(tmp);
 		tmp = head->next;
 	}
 
-	/*2.send user request to broad cast*/
+	/*send user request to broad cast*/
 	send_user_req();
 }
 

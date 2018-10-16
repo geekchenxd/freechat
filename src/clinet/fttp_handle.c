@@ -75,8 +75,11 @@ void freechat_handler_user_rsp(uint8_t *data, uint16_t data_len,
 	/*Add the user to user list for freechat
 	 * the user is already exist?*/
 	user_node = find_user_by_id(client.user, new->id);
-	if (user_node)
+	if (user_node) {
+		free(user_node->user);
+		user_node->user = new;
 		return;
+	}
 	user_node = (struct user_list *)malloc(sizeof(struct user_list));
 	if (!user_node) {
 		debug(ERROR, "allocate the new user node failed!\n");
@@ -153,8 +156,9 @@ void freechat_remove_user(uint16_t id)
 	if (!user)
 		return;
 
-	if (user_is_current(user))
+	if (user_is_current(user)) {
 		remove_current_select(&client);
+	}
 
 	user_list_del(client.user, &user->user->name[0]);
 }

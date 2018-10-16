@@ -231,6 +231,78 @@ int config_parser(const char *path, struct client *client)
 	return 0;
 }
 
+int update_name_config(char *name, char *configfile)
+{
+	config_t *pcfg = NULL;
+	int error = 0;
+
+	pcfg = get_config_root(configfile);
+	if (!pcfg)
+	  return -1;
+	/*return zero on successed*/
+	error = config_up_nickname(pcfg, name);
+	if (error)
+	  return error;
+	cofig_up_file(pcfg, configfile);
+	config_destroy(pcfg);
+
+	return error;
+}
+
+int update_signature_config(char *signature, char *configfile)
+{
+	config_t *pcfg = NULL;
+	int error = 0;
+
+	pcfg = get_config_root(configfile);
+	if (!pcfg)
+	  return -1;
+	/*return zero on successed*/
+	error = config_up_signature(pcfg, signature);
+	if (error)
+	  return error;
+	cofig_up_file(pcfg, configfile);
+	config_destroy(pcfg);
+
+	return error;
+}
+
+int update_birthday_config(char *birthday, char *configfile)
+{
+	config_t *pcfg = NULL;
+	int error = 0;
+
+	pcfg = get_config_root(configfile);
+	if (!pcfg)
+	  return -1;
+	/*return zero on successed*/
+	error = config_up_birthday(pcfg, birthday);
+	if (error)
+	  return error;
+	cofig_up_file(pcfg, configfile);
+	config_destroy(pcfg);
+
+	return error;
+}
+
+int update_sex_config(uint8_t sex, char *configfile)
+{
+	config_t *pcfg = NULL;
+	int error = 0;
+
+	pcfg = get_config_root(configfile);
+	if (!pcfg)
+	  return -1;
+	/*return zero on successed*/
+	error = config_up_user_type(pcfg, (int)sex);
+	if (error)
+	  return error;
+	cofig_up_file(pcfg, configfile);
+	config_destroy(pcfg);
+
+	return error;
+}
+
 int update_serverip_config(char *ip, char *configfile)
 {
 	config_t *pcfg = NULL;
@@ -266,6 +338,7 @@ int update_serverport_config(uint16_t port, char *configfile)
 
 	return error;
 }
+
 #if 0
 int main(int argc, char **argv)
 {
