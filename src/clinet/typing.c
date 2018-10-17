@@ -2,6 +2,7 @@
 #include "search.h"
 #include "gui.h"
 #include "fttp.h"
+#include "user_id.h"
 #include "config.h"
 
 extern int state;
@@ -551,6 +552,11 @@ void refresh_list(struct client *p)
 	/*delete all user except myself and chat room*/
 	while (tmp) {
 		head->next = tmp->next;
+
+		fttp_user_id_del(tmp->user->id);
+		free(tmp->user);
+		tmp->user = NULL;
+
 		free(tmp);
 		tmp = head->next;
 	}
@@ -731,7 +737,7 @@ void advanced_options(char *cmd, struct client *p)
 		werase(p->gui.input);
 		clean_display(p->gui.display);
 	} else {
-		draw_new(p->gui.input, "freechat>> Invalid command!\n");
+		wprintw(p->gui.input, "freechat>> Invalid command!\n");
 		wrefresh(p->gui.input);
 		wait_for_confirm(p->gui.input);
 		werase(p->gui.input);
@@ -748,6 +754,8 @@ void* typing_func(void *arg)
 	int typing_len = 0;
 
 	cn_len = get_cn_len();
+	/*enable keypad*/
+	keypad(p->gui.input, TRUE);
 
 	while (state == 0) {
         /*clear the message buffer*/
@@ -764,7 +772,7 @@ void* typing_func(void *arg)
 			werase(p->gui.input);
 			continue;
 		case 4:		/*^D down page */
-			draw_old_line(p->gui.display, 2, (int)get_display_height() - 1);
+			screen_scroll(p->gui.display, 1, (int)get_display_height() - 2);
 			werase(p->gui.input);
 			continue;
 		case 5:		/*^E*/
@@ -785,7 +793,7 @@ void* typing_func(void *arg)
 			continue;
 		case 18:	/*^R	up one page*/
 			werase(p->gui.input);
-			draw_old_line(p->gui.display, 1, (int)get_display_height() - 1);
+			screen_scroll(p->gui.display, 0, (int)get_display_height() - 2);
 			continue;
 		case 20:	/*^T find text*/
 			werase(p->gui.input);
@@ -798,6 +806,12 @@ void* typing_func(void *arg)
 		case 25:	/*^Y select a contact*/
 			werase(p->gui.input);
 			update_current_select(p);
+			continue;
+		case KEY_UP:
+			screen_scroll(p->gui.display, 0, 1);
+			continue;
+		case KEY_DOWN:
+			screen_scroll(p->gui.display, 1, 1);
 			continue;
 		default:
 			message_buffer[0] = (char)cmd;
@@ -827,6 +841,8 @@ void* typing_func(void *arg)
 						break;
 					wprintw(p->gui.input, "%s", message_buffer);
 					wrefresh(p->gui.input);
+				} else if (cmd == KEY_UP || cmd == KEY_DOWN) {
+					continue;
 				} else {
 					message_buffer[typing_len++] = cmd;
 				}
@@ -836,7 +852,7 @@ void* typing_func(void *arg)
 #endif
 			if (strlen(message_buffer) > 200) {
 				werase(p->gui.input);
-				draw_new(p->gui.input, "freechat>> Message cannot more than 200 characters.");
+				wprintw(p->gui.input, "%s\n", "freechat>> Message cannot more than 200 characters.");
 				wrefresh(p->gui.input);
 				wait_for_confirm(p->gui.input);
 				werase(p->gui.input);

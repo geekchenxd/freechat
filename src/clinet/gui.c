@@ -70,7 +70,7 @@ int init_gui(uint8_t size)
     wbkgd(right_column, COLOR_PAIR(3));
     wrefresh(right_column);
 
-    initial_buffer_screen(display_height, size);
+    init_screen(display_height, size);
 
 	/*show fix help information*/
 	char *fix1 = "^G Get help    ^E Quit     ^Y Select    ^O Unselect    ^T Search key";

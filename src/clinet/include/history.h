@@ -9,17 +9,17 @@
 #define LEN_LINE 500 
 
 
-struct node {
+struct history {
 	int line_number;
 	char string[LEN_LINE];
-	struct node *next;
+	struct history *next;
 };
 
 uint32_t get_display_height();
 void add_record(char *string);
 void draw_new(WINDOW *display, char *string);
-void draw_old_line(WINDOW *display, int option, int line_user_want_scroll);
-
-void initial_buffer_screen(int dis_h, int ty_h);
+void screen_scroll(WINDOW *display, int dir, int lines);
+void init_screen(int height_display, int height_typing);
+int search(char *word, WINDOW *display);
 
 #endif
