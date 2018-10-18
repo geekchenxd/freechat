@@ -7,8 +7,7 @@
 #include "history.h"
 #include "user_list.h"
 
-#define LENGHT_USERNAME 255
-#define LENGHT_MESSAGE 255
+#define LENGTH_MESSAGE 255
 #define CONFIGFILEPATH "/etc/freechat/freechat.cfg"
 
 struct gui {

@@ -4,12 +4,59 @@
 #include "fttp.h"
 #include "user_id.h"
 #include "config.h"
+#include "his_cmd.h"
 
 extern int state;
 extern int g_bottom_line;
 extern pthread_t *global_display_thread;
 static struct user_list *current;
+/*
+ * the history of the command sarted with ':'.
+ */
+static command *current_cmd = NULL;
+/*
+ * this is the command typing flag
+ */
+bool writting = false;
 
+
+void cmd_up(WINDOW *win, char *cmd, int *len)
+{
+	if (current_cmd == NULL) {
+		return;
+	}
+	memset(cmd, 0x0, LENGTH_MESSAGE);
+	*len = 0;
+
+	if (!writting) {
+		if (current_cmd->prev)
+			current_cmd = current_cmd->prev;
+	} else {
+		writting = false;
+	}
+	memcpy(cmd, current_cmd->cmd.cmd, strlen(current_cmd->cmd.cmd));
+	*len = strlen(current_cmd->cmd.cmd);
+	werase(win);
+	wprintw(win, "%s\n", current_cmd->cmd.cmd);
+	wrefresh(win);
+}
+
+void cmd_down(WINDOW *win, char *cmd, int *len)
+{
+	if (current_cmd == NULL)
+		return;
+
+	memset(cmd, 0x0, LENGTH_MESSAGE);
+	*len = 0;
+	if (current_cmd->next) 
+		current_cmd = current_cmd->next;
+
+	memcpy(cmd, current_cmd->cmd.cmd, strlen(current_cmd->cmd.cmd));
+	*len = strlen(current_cmd->cmd.cmd);
+	werase(win);
+	wprintw(win, "%s\n", current_cmd->cmd.cmd);
+	wrefresh(win);
+}
 
 /*
  * return the bytes number of one 
@@ -690,7 +737,8 @@ void clean_display(WINDOW *display)
 /*
  * This function handles the advanced options.
  */
-void advanced_options(char *cmd, struct client *p)
+void advanced_options(char *cmd, struct client *p,
+		command **cmd_head)
 {
 	if (!cmd || !p)
 		return;
@@ -709,6 +757,9 @@ void advanced_options(char *cmd, struct client *p)
 	if (strcasecmp(cmd, ":login") == 0) {
 		werase(p->gui.input);
 		connect_server(p);
+	} else if (strcasecmp(cmd, ":logout") == 0) {
+		werase(p->gui.input);
+		/**/
 	} else if (strcasecmp(cmd, ":info") == 0) {
 		werase(p->gui.input);
 		contact_info(p);
@@ -736,12 +787,19 @@ void advanced_options(char *cmd, struct client *p)
 	} else if (strcasecmp(cmd, ":clear") == 0) {
 		werase(p->gui.input);
 		clean_display(p->gui.display);
+	} else if (strcasecmp(cmd, ":register") == 0) {
+		werase(p->gui.input);
+		/**/
 	} else {
 		wprintw(p->gui.input, "freechat>> Invalid command!\n");
 		wrefresh(p->gui.input);
 		wait_for_confirm(p->gui.input);
 		werase(p->gui.input);
+		return;
 	}
+
+	if (cmd_link_add(cmd_head, cmd))
+		current_cmd = cmd_link_get_current();
 }
 
 void* typing_func(void *arg) 
@@ -749,13 +807,17 @@ void* typing_func(void *arg)
 	int cn_len = 0; /*bytes number of one Chinese character*/
 	int cmd = 0;
 	struct client *p = (struct client *)arg;
-    char message_buffer[LENGHT_MESSAGE];
-    char message_buffer_2[LENGHT_MESSAGE];
+    char message_buffer[LENGTH_MESSAGE];
+    char message_buffer_2[LENGTH_MESSAGE];
 	int typing_len = 0;
+	command *head = NULL;
 
-	cn_len = get_cn_len();
 	/*enable keypad*/
 	keypad(p->gui.input, TRUE);
+	cn_len = get_cn_len();
+
+	/*init the link head of cmd history*/
+	cmd_link_init(head);
 
 	while (state == 0) {
         /*clear the message buffer*/
@@ -823,11 +885,12 @@ void* typing_func(void *arg)
 					/*end with typing*/
 					message_buffer[typing_len] = '\0';
 					break;
-				} else if (cmd == 8 || cmd == 127) {
+				} else if (cmd == 263 || cmd == 8 || cmd == 127) {
 					/*handle back space*/
 					
 					/*here for Chinese delete handle*/
-					if (message_buffer[typing_len - 1] >= 0x80) {
+					if ((message_buffer[typing_len - 1] & 0x80)
+							|| (message_buffer[typing_len - 1] >= 0x80)) {
 						typing_len -= cn_len; /*utf-8 linux mode*/
 					} else {
 						typing_len--;
@@ -837,13 +900,20 @@ void* typing_func(void *arg)
 					werase(p->gui.input);
 
 					/*all input char is deleted*/
-					if (typing_len == 0)
+					if (typing_len <= 0)
 						break;
 					wprintw(p->gui.input, "%s", message_buffer);
 					wrefresh(p->gui.input);
-				} else if (cmd == KEY_UP || cmd == KEY_DOWN) {
+				} else if (cmd == KEY_UP) {
+					if (message_buffer[0] == ':')
+						cmd_up(p->gui.input, message_buffer, &typing_len);
+					continue;
+				} else if (cmd == KEY_DOWN) {
+					if (message_buffer[0] == ':')
+						cmd_down(p->gui.input, message_buffer, &typing_len);
 					continue;
 				} else {
+					writting = true;
 					message_buffer[typing_len++] = cmd;
 				}
 			}
@@ -863,7 +933,7 @@ void* typing_func(void *arg)
 				continue;
 
 			if (message_buffer[0] == ':') {
-				advanced_options(&message_buffer[0], p);
+				advanced_options(&message_buffer[0], p, &head);
 				continue;
 			}
 
@@ -893,6 +963,7 @@ void* typing_func(void *arg)
 		werase(p->gui.input);
 	}
 
+	cmd_link_destroy(&head);
     pthread_cancel(*global_display_thread);
 	return NULL;
 }
