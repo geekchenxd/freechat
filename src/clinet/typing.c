@@ -118,8 +118,15 @@ bool user_is_current(struct user_list *user)
 	return (user == current);
 }
 
-void remove_current_select(struct client *p)
+void remove_current_select(struct client *p, bool confirm)
 {
+	if (!confirm) {
+		current = NULL;
+		werase(p->gui.single_line);
+		wbkgd(p->gui.single_line, COLOR_PAIR(4));
+		wrefresh(p->gui.single_line);
+		return;
+	}
 	if (!current) {
 		wprintw(p->gui.input, "freechat>> No user has been selected.");
 		wrefresh(p->gui.input);
@@ -851,7 +858,7 @@ void* typing_func(void *arg)
 			continue;
 		case 15:	/*^O unselect*/
 			werase(p->gui.input);
-			remove_current_select(p);
+			remove_current_select(p, true);
 			continue;
 		case 18:	/*^R	up one page*/
 			werase(p->gui.input);

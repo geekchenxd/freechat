@@ -157,7 +157,7 @@ void freechat_remove_user(uint16_t id)
 		return;
 
 	if (user_is_current(user)) {
-		remove_current_select(&client);
+		remove_current_select(&client, false);
 	}
 
 	user_list_del(client.user, &user->user->name[0]);
