@@ -4,7 +4,7 @@
 #include "fttp.h"
 #include "user_id.h"
 #include "config.h"
-#include "his_cmd.h"
+#include "cmdhis.h"
 
 extern int state;
 extern int g_bottom_line;

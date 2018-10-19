@@ -13,6 +13,7 @@
 #include "client.h"
 #include "fttp_handle.h"
 #include "session.h"
+#include "gui.h"
 
 /*
  * the global client is already externed in client.h
@@ -61,6 +62,19 @@ void fttp_task(struct client *p)
 			timeout = 0;
 		}
 
+#if 0
+		/*
+		 * if the terminal sise changed, refresh the display
+		 * interface
+		 */
+		if(cots()) {
+			reinit_gui();
+			p->gui.display = get_display();
+			p->gui.input = get_typing();
+			p->gui.single_line = get_single_line();
+			continue;
+		}
+#endif
 		usleep(1000);
 	}
 }

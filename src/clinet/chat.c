@@ -67,7 +67,7 @@ void process_exit(int signal_num)
 {
     pthread_cancel(*global_display_thread);
     pthread_cancel(*global_typing_thread);
-	cleanup_gui(client.gui.display, client.gui.input);
+	cleanup_gui();
 	exit(0);
 }
 
@@ -143,7 +143,7 @@ int main(int argc , char *argv[])
     pthread_join( typing_thread, NULL);
     pthread_join( display_thread, NULL);
 
-	cleanup_gui(p->gui.display, p->gui.input);
+	cleanup_gui();
 
     return 0;
 }
