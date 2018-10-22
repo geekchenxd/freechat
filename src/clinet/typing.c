@@ -20,6 +20,10 @@ static command *current_cmd = NULL;
 bool writting = false;
 
 
+/*
+ *Search history command upwards.if command found,
+ *copy it to cmd, and set it's lenngth to len.
+ */
 void cmd_up(WINDOW *win, char *cmd, int *len)
 {
 	if (current_cmd == NULL) {
@@ -41,6 +45,10 @@ void cmd_up(WINDOW *win, char *cmd, int *len)
 	wrefresh(win);
 }
 
+/*
+ *Search history command downwards.if command found,
+ *copy it to cmd, and set it's lenngth to len.
+ */
 void cmd_down(WINDOW *win, char *cmd, int *len)
 {
 	if (current_cmd == NULL)
@@ -59,6 +67,28 @@ void cmd_down(WINDOW *win, char *cmd, int *len)
 }
 
 /*
+ *use the tab key to complete the command already in history.
+ *if found the command, copy the cmd to cmd, and set it's length
+ *to len.
+ */
+void cmd_tab(command **start, WINDOW *win, char *cmd, int *len)
+{
+	command *found = NULL;
+
+	found = cmd_link_find(*start, cmd); 
+
+	if (found) {
+		*start = found->next;
+		memset(cmd, 0x0, LENGTH_MESSAGE);
+		memcpy(cmd, current_cmd->cmd.cmd, strlen(current_cmd->cmd.cmd));
+		*len = strlen(current_cmd->cmd.cmd);
+		werase(win);
+		wprintw(win, "%s\n", current_cmd->cmd.cmd);
+		wrefresh(win);
+	}
+}
+
+/*
  * return the bytes number of one 
  * Chinese character
  */
@@ -68,6 +98,9 @@ static int get_cn_len(void)
 	return strlen(s)/2;
 }
 
+/*
+ * give a hint and wait for user's confirmation.
+ */
 void wait_for_confirm(WINDOW *win)
 {
 	int len;
@@ -113,11 +146,17 @@ bool get_user_option(WINDOW *win, char *tips)
 	return status;
 }
 
+/*
+ * judge weather the user is currently selected user.
+ */
 bool user_is_current(struct user_list *user)
 {
 	return (user == current);
 }
 
+/*
+ * unselect the currently selected user.
+ */
 void remove_current_select(struct client *p, bool confirm)
 {
 	if (!confirm) {
@@ -149,6 +188,9 @@ void remove_current_select(struct client *p, bool confirm)
 	wrefresh(p->gui.input);
 }
 
+/*
+ * update the currently selected user.
+ */
 void update_current_select(struct client *p)
 {
 	struct user_list *tmp = NULL;
@@ -190,6 +232,9 @@ void update_current_select(struct client *p)
 	werase(display);
 }
 
+/*
+ * handle command for send file.
+ */
 void send_file(struct client *p)
 {
 	struct user_list *tmp = NULL;
@@ -231,6 +276,9 @@ void send_file(struct client *p)
 	werase(display);
 }
 
+/*
+ * handle command for search key word.
+ */
 void search_text(struct client *p)
 {
 	char text[MAXNAMESIZE] = {0x0};
@@ -305,11 +353,17 @@ void display_online_user(struct client *client, bool flag)
 	}
 }
 
+/*
+ * judge weather the port is valid
+ */
 bool port_is_valid(uint16_t port)
 {
 	return ((port > 1024) && (port < 65535));
 }
 
+/*
+ * judge weather the IP address is valid
+ */
 bool ip_is_valid(char *ip)
 {
 	int a,b,c,d;
@@ -331,6 +385,9 @@ bool ip_is_valid(char *ip)
 	return status;
 }
 
+/*
+ * judge weather the string of birthday is valid
+ */
 bool birthday_is_valid(char *birthday)
 {
 	int year, mon, day;
@@ -818,6 +875,7 @@ void* typing_func(void *arg)
     char message_buffer_2[LENGTH_MESSAGE];
 	int typing_len = 0;
 	command *head = NULL;
+	command *tmp = NULL;
 
 	/*enable keypad*/
 	keypad(p->gui.input, TRUE);
@@ -885,12 +943,14 @@ void* typing_func(void *arg)
 		default:
 			message_buffer[0] = (char)cmd;
 			typing_len = 1;
+			tmp = head;
 
 			while (1) {
 				cmd = wgetch(p->gui.input);
 				if (cmd == '\n') {
 					/*end with typing*/
 					message_buffer[typing_len] = '\0';
+					tmp = head;
 					break;
 				} else if (cmd == 263 || cmd == 8 || cmd == 127) {
 					/*handle back space*/
@@ -919,14 +979,16 @@ void* typing_func(void *arg)
 					if (message_buffer[0] == ':')
 						cmd_down(p->gui.input, message_buffer, &typing_len);
 					continue;
+				} else if (cmd == 9 && message_buffer[0] == ':') {
+					message_buffer[typing_len] = '\0';
+					cmd_tab(&tmp, p->gui.input, message_buffer, &typing_len);
+					continue;
 				} else {
 					writting = true;
 					message_buffer[typing_len++] = cmd;
 				}
 			}
-#if 0
-			wscanw(p->gui.input, " %[^\n]s", &message_buffer[1]);
-#endif
+
 			if (strlen(message_buffer) > 200) {
 				werase(p->gui.input);
 				wprintw(p->gui.input, "%s\n", "freechat>> Message cannot more than 200 characters.");

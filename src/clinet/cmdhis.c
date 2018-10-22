@@ -95,7 +95,7 @@ command *cmd_link_find(command *head, char *cmd)
 		return NULL;
 
 	while (tmp) {
-		if (!strcmp(cmd, tmp->cmd.cmd))
+		if (!strncmp(cmd, tmp->cmd.cmd, strlen(cmd)))
 			return tmp;
 		tmp = tmp->next;
 	}
