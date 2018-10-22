@@ -51,6 +51,7 @@ bool cmd_link_add(command **head, char *cmd)
 		(*head)->next = NULL;
 		(*head)->cmd.index = global_index++;
 		memcpy((*head)->cmd.cmd, cmd, len);
+		(*head)->cmd.cmd[len] = '\0';
 		current = *head;
 	} else {
 		if (global_index > MAXCMDNUM) {
@@ -68,6 +69,7 @@ bool cmd_link_add(command **head, char *cmd)
 			new->cmd.index = global_index++;
 		}
 		memcpy(new->cmd.cmd, cmd, len);
+		new->cmd.cmd[len] = '\0';
 
 		/*add the new command to the end of the command link*/
 		tmp = *head;
