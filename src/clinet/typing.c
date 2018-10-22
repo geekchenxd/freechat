@@ -6,6 +6,7 @@
 #include "config.h"
 #include "cmdhis.h"
 
+#define CMD_NUM 12
 extern int state;
 extern int g_bottom_line;
 extern pthread_t *global_display_thread;
@@ -18,7 +19,13 @@ static command *current_cmd = NULL;
  * this is the command typing flag
  */
 bool writting = false;
-
+/*
+ * the advanced command table
+ */
+char cmd_table[CMD_NUM][MAXCMDLENGTH] = {
+	":login", ":logout", ":info", ":edit", ":refresh", ":log", ":lock",
+	":locked", ":unlock", ":server", ":clear", ":register"
+};
 
 /*
  *Search history command upwards.if command found,
@@ -71,21 +78,25 @@ void cmd_down(WINDOW *win, char *cmd, int *len)
  *if found the command, copy the cmd to cmd, and set it's length
  *to len.
  */
-void cmd_tab(command **start, WINDOW *win, char *cmd, int *len)
+int cmd_tab(int start, WINDOW *win, char *cmd, int *len)
 {
-	command *found = NULL;
+	int i = 0;
 
-	found = cmd_link_find(*start, cmd); 
+	if (start >= CMD_NUM)
+		return start;
 
-	if (found) {
-		*start = found->next;
-		memset(cmd, 0x0, LENGTH_MESSAGE);
-		memcpy(cmd, current_cmd->cmd.cmd, strlen(current_cmd->cmd.cmd));
-		*len = strlen(current_cmd->cmd.cmd);
-		werase(win);
-		wprintw(win, "%s\n", current_cmd->cmd.cmd);
-		wrefresh(win);
+	for (i = start; i < CMD_NUM; i++) {
+		if (!strncmp(cmd, cmd_table[i], strlen(cmd))) {
+			memset(cmd, 0x0, LENGTH_MESSAGE);
+			memcpy(cmd, cmd_table[i], strlen(cmd_table[i]));
+			*len = strlen(cmd_table[i]);
+			werase(win);
+			wprintw(win, "%s\n", cmd);
+			wrefresh(win);
+			return i;
+		}
 	}
+	return start;
 }
 
 /*
@@ -875,7 +886,6 @@ void* typing_func(void *arg)
     char message_buffer_2[LENGTH_MESSAGE];
 	int typing_len = 0;
 	command *head = NULL;
-	command *tmp = NULL;
 
 	/*enable keypad*/
 	keypad(p->gui.input, TRUE);
@@ -883,6 +893,7 @@ void* typing_func(void *arg)
 
 	/*init the link head of cmd history*/
 	cmd_link_init(head);
+	int pos = 0;
 
 	while (state == 0) {
         /*clear the message buffer*/
@@ -943,14 +954,12 @@ void* typing_func(void *arg)
 		default:
 			message_buffer[0] = (char)cmd;
 			typing_len = 1;
-			tmp = head;
 
 			while (1) {
 				cmd = wgetch(p->gui.input);
 				if (cmd == '\n') {
 					/*end with typing*/
 					message_buffer[typing_len] = '\0';
-					tmp = head;
 					break;
 				} else if (cmd == 263 || cmd == 8 || cmd == 127) {
 					/*handle back space*/
@@ -981,7 +990,7 @@ void* typing_func(void *arg)
 					continue;
 				} else if (cmd == 9 && message_buffer[0] == ':') {
 					message_buffer[typing_len] = '\0';
-					cmd_tab(&tmp, p->gui.input, message_buffer, &typing_len);
+					pos = cmd_tab(pos, p->gui.input, message_buffer, &typing_len);
 					continue;
 				} else {
 					writting = true;
