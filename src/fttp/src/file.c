@@ -124,13 +124,6 @@ out:
 	return status;
 }
 
-void handler_trans_file(uint8_t *data, uint16_t data_len,
-		struct fttp_addr *src, uint8_t session_id)
-{
-
-}
-
-
 int fttp_filename_decode(uint8_t *data, char *name)
 {
 	if (!data || !name)
@@ -224,5 +217,32 @@ out:
 void handler_file_read_rsp(uint8_t *data, uint16_t data_len,
 		struct fttp_addr *src, uint8_t session_id)
 {
+}
+
+
+void handler_trans_file(uint8_t *data, uint16_t data_len,
+		struct fttp_addr *src, uint8_t session_id)
+{
+	enum file_command cmd_type;
+	int len = 0;
+	int decode_len = 0;
+
+	cmd_type = data[decode_len];
+	decode_len++;
+
+	switch (cmd_type) {
+	case PUT_REQ:
+		break;
+	case PUT_ACK:
+		break;
+	case GET_REQ:
+		break;
+	case SEND_FILE:
+		break;
+	case SEND_ACK:
+		break;
+	default:
+		break;
+	}
 }
 

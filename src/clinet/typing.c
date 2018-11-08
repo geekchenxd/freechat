@@ -990,7 +990,9 @@ void* typing_func(void *arg)
 					continue;
 				} else if (cmd == 9 && message_buffer[0] == ':') {
 					message_buffer[typing_len] = '\0';
-					pos = cmd_tab(pos, p->gui.input, message_buffer, &typing_len);
+					pos = cmd_tab(0, p->gui.input, message_buffer, &typing_len);
+					if (pos >= CMD_NUM)
+						pos = 0;
 					continue;
 				} else {
 					writting = true;
