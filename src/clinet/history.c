@@ -95,6 +95,8 @@ void screen_scroll(WINDOW *display, int dir, int lines)
 		else	/*down*/
 		   	desc_line = g_bottom_line;
 
+		if (desc_line <= 0)
+			break;
 		current = root;
 		while (current->next && current->next->line_number < desc_line) 
 			current = current->next;
